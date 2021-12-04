@@ -1,3 +1,20 @@
+# Ryderex specific
+.config.json
+db/
+ryderex-import.log
+
+/api/node_modules
+/api/build
+/api/*.log
+/api/*.log.gz
+/api/application.log
+/api/*-audit.json
+/api/coverage
+/api/.nyc_output
+
+.bash_*
+.bashrc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
