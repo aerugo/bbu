@@ -2,6 +2,7 @@
 .config.json
 db/
 ryderex-import.log
+config.json
 
 /api/node_modules
 /api/build
