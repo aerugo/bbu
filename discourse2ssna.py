@@ -519,7 +519,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             annotations[aid] = {
                 'id': aid,
                 'text': annotation[1], 
-                'quote': annotation[2], 
+                'quote': annotation[2].split('\n    \n')[0].rstrip() if annotation[2] else annotation[2],
                 'created_at': annotation[3],
                 'updated_at': annotation[4], 
                 'tag_id': annotation[5],
@@ -527,7 +527,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
                 'creator_id': annotation[7], 
                 'type': annotation[8],
                 'topic_id': annotation[9] 
-        }
+            }
 
     mylogs.info(f'    Got {len(list(annotations.keys()))} annotations.')
 
