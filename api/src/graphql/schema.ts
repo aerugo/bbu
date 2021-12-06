@@ -340,66 +340,7 @@ export const resolvers = {
       graph.setAttribute("corpora", params.corpora);
       log.info(`Returned computed graph`);
       return graph.export();
-    },
-    getGraphByCorpusAndCode: async (
-      parent: GraphQLObjectType,
-      params: { platform: string; corpora: string, code: string,  },
-      ctx: ResolverContext,
-      resolverInfo: GraphQLResolveInfo,
-    ): Promise<any> => {
-      const query = `
-        CALL apoc.graph.fromCypher('
-          MATCH  (:platform {name: $platform})<-[:ON_PLATFORM]-(corpus:corpus {name: $corpora})
-          WITH corpus
-          MATCH
-          p1=(post)-[:IN_TOPIC]->(topic),
-          p2=(post)<-[:CREATED]-(user:user),
-          p3=(user:user)-[:TALKED_OR_QUOTED*0..1]->(user2:user),
-          p4=(post)<-[:ANNOTATES*0..1]-(a:annotation)-[:REFERS_TO*0..1]->(c:code)-[:IN_CORPUS]->(corpus)
-          WHERE (topic)-[:TAGGED_WITH]->(corpus) AND
-                exists((user2)-[:CREATED]->()-[:IN_TOPIC]->()-[:TAGGED_WITH]->(corpus)) AND
-                user <> user2
-          RETURN p1, p2, p3, p4, [(c)-[r:COOCCURS {corpus: $corpora}]->(c2) | [r, c2]]',
-          {corpora:$corpora, platform:$platform},
-          "",
-          {}
-        ) YIELD graph AS g
-        RETURN g.nodes AS nodes, g.relationships AS edges`;
-
-        const q1 = `
-          MATCH (:platform {name: $platform})<-[:ON_PLATFORM]-(corpus:corpus {name: $corpora})<-[:IN_CORPUS]-(code1:code {name: $code})
-          WITH corpus, code1
-          MATCH (code1)<-[:REFERS_TO]-(annotation1:annotation)
-          RETURN code1.name, annotation1
-        `
-        const q2 = `
-          MATCH (:platform {name: $platform})<-[:ON_PLATFORM]-(corpus:corpus {name: $corpora})<-[:IN_CORPUS]-(code1:code {name: $code})
-          WITH corpus, code1
-          MATCH (code1)<-[:REFERS_TO]-(annotation1:annotation)
-          WITH annotation1, code1, corpus
-          MATCH (code1)-[r:COOCCURS {corpus: corpus.name}]-(code2:code)
-          WHERE r.count > $cooccurrences
-          WITH annotation1, code1, code2
-          MATCH (annotation1)-[:ANNOTATES]->(post:post)<-[:ANNOTATES]-(annotation2:annotation)-[:REFERS_TO]->(code2)
-          RETURN code1.name, code2.name, annotation2
-        `
-        const q3 = `
-          MATCH (:platform {name: $platform})<-[:ON_PLATFORM]-(corpus:corpus {name: $corpora})<-[:IN_CORPUS]-(code1:code {name: $code})
-          WITH corpus, code1
-          MATCH (code1)<-[:REFERS_TO]-(annotation1:annotation)
-          WITH annotation1, code1, corpus
-          MATCH (code1)-[r1:COOCCURS {corpus: corpus.name}]-(code2:code)-[r2:COOCCURS {corpus: corpus.name}]-(code3:code)
-          WHERE r1.count > $cooccurrences AND r2.count > $cooccurrences
-          RETURN code2.name, code2.annotations_count, count(DISTINCT r2)
-        `
-
-      log.info(`Asking graph for ${JSON.stringify(params)}`);
-      const graph = await cypherToGraph(ctx, query, params);
-      graph.setAttribute("platform", params.platform);
-      graph.setAttribute("corpora", params.corpora);
-      log.info(`Returned computed graph`);
-      return graph.export();
-    },
+    }
   },
 };
 
