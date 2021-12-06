@@ -171,7 +171,7 @@ export const typeDefs = gql`
               description: cooccurring_code.description, 
               cooccurrences: r.count,
               annotations_count: cooccurring_code.annotations_count,
-              annotations: COLLECT("[" + toString(cooccurring_annotation.post_id) + "]" +  cooccurring_annotation.quote),
+              annotations_ids: COLLECT(cooccurring_annotation.discourse_id),
               neighbors: cooccurring_neighbors
               } AS cooccurring_codes
           RETURN cooccurring_codes
@@ -185,7 +185,15 @@ export const typeDefs = gql`
     annotations_count: Int
     description: String
     cooccurrences: Int
-    annotations: [String]
+    annotations_ids: [Int]
+    annotations: [annotation]
+      @cypher(
+        statement: """
+          MATCH (a:annotation) 
+          WHERE a.discourse_id IN this.annotations_ids
+          RETURN a
+        """
+      )
   }
 
   type corpus_tag {
