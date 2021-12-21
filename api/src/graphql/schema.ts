@@ -172,7 +172,7 @@ export const typeDefs = gql`
               cooccurrences: r.count,
               annotations_count: cooccurring_code.annotations_count,
               annotations_ids: COLLECT(cooccurring_annotation.discourse_id),
-              neighbors: cooccurring_neighbors
+              cooccurrence_degree: cooccurring_neighbors
               } AS cooccurring_codes
           RETURN cooccurring_codes
         """
@@ -186,6 +186,7 @@ export const typeDefs = gql`
     description: String
     cooccurrences: Int
     annotations_ids: [Int]
+    cooccurrence_degree: Int
     annotations: [annotation]
       @cypher(
         statement: """
