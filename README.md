@@ -50,29 +50,32 @@ Through this experiment, we would like to explore the experience of annotated re
 
 We have defined the "codes" type on the GraphQl endpoint to return the data you will need for this experiment. This query should get you everything you need for a given code:
 
->   query {
->     code: code(name: "Mother") {
->       discourse_id
->       name
->       description
->       annotations_count
->       annotations {
->         quote
->         post_id
->       }
-> cooccurring_codes {
->         discourse_id
->         name
->         annotations_count
->         description
->         cooccurrences
->         annotations {
->           quote
->           post_id
->         }
->       }
->     }
->   }
+```
+query {
+  code: code(name: "Mother") {
+    discourse_id
+    name
+    description
+    annotations_count
+    annotations {
+      quote
+      post_id
+    }
+    cooccurring_codes {
+      discourse_id
+      name
+      annotations_count
+      description
+      cooccurrences
+      cooccurrence_degree
+      annotations {
+        quote
+        post_id
+      }
+    }
+  }
+}
+```
 
 This returns a code by name and all annotations that refer to that code. It also returns all cooccurring codes at 2 or more cooccurrences. Each cooccurring_codes object has a cooccurrences property with the cooccurrence count with the "origin" code. Annotations for cooccurring_codes are not all annotations that refer to this code. Instead, these are the annotations that refer to this code that are made on posts that have been also been annotated with the origin code. 
 
