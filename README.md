@@ -4,7 +4,7 @@ Babel Between Us (BBU) is a collaborative literary project exploring the unchart
 
 A group of 18 writers collectively improvised stories on the [bbu.world forum](https://bbu.world/c/babel-between-us/9) from March to December 2020. The resulting fiction was read and annotated by a group of readers using experimental ethnographic methods. Their work was visualised as a ["Semantic Social Network"](http://server-2021.edgeryders.eu/dashboard/bbu/ethno-bbu?m=cn%7Ccl&cn.weightFilter=3&cn.labelDensity=0.67&cn.labelThreshold=7), which was then presented back to the writers. 
 
-Babel Between Us includes over 900 fragments of prose and poetry. Many of the fragments are parts of [stories written as  collaborative threads](https://bbu.world/t/the-wonderful-journals-of-2020-first-edition/888). Some are [thematic explorations of form](https://bbu.world/t/copy-paste-like-a-lil-piece-of-clay-molding-writing-moldy-writing/1260/8). Some fragments are connected through [shared symbolism and context](http://server-2021.edgeryders.eu/dashboard/bbu/ethno-bbu?m=cn%7Cctl&cn.weightFilter=4&cn.labelDensity=0.67&cn.labelThreshold=7&cn.mode=scopeArea&sc.post=x%C2%9C%2B%C3%88%2F.%C2%8974%C2%B70%C2%AE)%00%C2%B3%2CM%C3%A0%2CSK(%C3%8B%C3%82%C3%90%14%C3%82224%C2%86%C3%8A%1A%19%1B%C2%98%40X%C3%86%06%C2%86%C2%960%C2%96%C2%81%01%00N%14%1A%C3%BA).
+Babel Between Us includes over 900 fragments of prose and poetry. Many of the fragments are parts of [stories written as  collaborative threads](https://bbu.world/t/the-wonderful-journals-of-2020-first-edition/888). Some are [thematic explorations of form](https://bbu.world/t/copy-paste-like-a-lil-piece-of-clay-molding-writing-moldy-writing/1260/8). Some fragments are connected through [shared symbolism and context](http://server-2021.edgeryders.eu/dashboard/bbu/ethno-bbu?m=cn%7Cctl&cn.weightFilter=4&cn.labelDensity=0.67&cn.labelThreshold=7&cn.mode=scopeArea&sc.post=x%C2%9C%2B%C3%88%2F.%C2%8974%C2%B70%C2%AE\)%00%C2%B3%2CM%C3%A0%2CSK\(%C3%8B%C3%82%C3%90%14%C3%82224%C2%86%C3%8A%1A%19%1B%C2%98%40X%C3%86%06%C2%86%C2%960%C2%96%C2%81%01%00N%14%1A%C3%BA).
 
 In the next step of the project we want to explore other ways to present volumes of annotated text, especially related to prose and poetry. 
 
@@ -50,29 +50,32 @@ Through this experiment, we would like to explore the experience of annotated re
 
 We have defined the "codes" type on the GraphQl endpoint to return the data you will need for this experiment. This query should get you everything you need for a given code:
 
->   query {
->     code: code(name: "Mother") {
->       discourse_id
->       name
->       description
->       annotations_count
->       annotations {
->         quote
->         post_id
->       }
-> cooccurring_codes {
->         discourse_id
->         name
->         annotations_count
->         description
->         cooccurrences
->         annotations {
->           quote
->           post_id
->         }
->       }
->     }
->   }
+```
+query {
+  code: code(name: "Mother") {
+    discourse_id
+    name
+    description
+    annotations_count
+    annotations {
+      quote
+      post_id
+    }
+    cooccurring_codes {
+      discourse_id
+      name
+      annotations_count
+      description
+      cooccurrences
+      cooccurrence_degree
+      annotations {
+        quote
+        post_id
+      }
+    }
+  }
+}
+```
 
 This returns a code by name and all annotations that refer to that code. It also returns all cooccurring codes at 2 or more cooccurrences. Each cooccurring_codes object has a cooccurrences property with the cooccurrence count with the "origin" code. Annotations for cooccurring_codes are not all annotations that refer to this code. Instead, these are the annotations that refer to this code that are made on posts that have been also been annotated with the origin code. 
 
