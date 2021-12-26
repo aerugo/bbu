@@ -8,6 +8,8 @@ from neo4j import GraphDatabase
 import numpy as np
 from gibberish import Gibberish
 
+commonwords = ['the','of','to','and','a','in','is','it','you','that','he','was','for','on','are','with','as','I','his','they','be','at','one','have','this','from','or','had','by','not','word','but','what','some','we','can','out','other','were','all','there','when','up','use','your','how','said','an','each','she','which','do','their','time','if','will','way','about','many','then','them','write','would','like','so','these','her','long','make','thing','see','him','two','has','look','more','day','could','go','come','did','number','sound','no','most','people','my','over','know','water','than','call','first','who','may','down','side','been','now','find']
+
 # Python version 3.8.6
 # For this script to work, neo4j must have APOC installed and the neo4j.conf file 
 # must have the following properties set:
@@ -556,13 +558,19 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     for post in posts.values():
         for annotation1 in post['annotations']:
             aid = annotation1['id']
-            s1 = annotation1['start_offset']
-            e1 = annotation1['end_offset']
+            q1 = annotation1['quote']
             for annotation2 in post['annotations']:
-                s2 = annotation2['start_offset']
-                e2 = annotation2['end_offset']
+                q2 = annotation2['quote']
                 overlap = False
-                overlap = s1 < s2 < e1 or s2 < s1 < e2
+                st1 = set(q1.split())
+                st2 = set(q2.split())
+                c = set(commonwords)
+                st12 = st1 & st2
+                st12diff = st12.difference(c)
+                if len(st12diff) > 2:
+                    overlap = True
+                if annotation1['quote'] == annotation2['quote']:
+                    overlap = True
                 if annotation1['id'] == annotation2['id']:
                     overlap = False
                 if overlap:
