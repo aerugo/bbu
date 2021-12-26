@@ -388,7 +388,8 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'is_reply_to': [],
             'is_liked_by': [],
             'is_private': private,
-            'consent': consenting
+            'consent': consenting,
+            'annotations': []
         }
 
     quotes = {}
@@ -500,8 +501,23 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
 
     annotations_query = f'''
     SELECT
-    id, text, quote, created_at, updated_at, tag_id, post_id, creator_id, type, topic_id
+    annotator_store_annotations.id, 
+	annotator_store_annotations.text, 
+	annotator_store_annotations.quote, 
+	annotator_store_annotations.created_at, 
+	annotator_store_annotations.updated_at, 
+	annotator_store_annotations.tag_id, 
+	annotator_store_annotations.post_id, 
+	annotator_store_annotations.creator_id, 
+	annotator_store_annotations.type, 
+	annotator_store_annotations.topic_id, 
+	annotator_store_ranges.start,
+	annotator_store_ranges.end,
+	annotator_store_ranges.start_offset,
+	annotator_store_ranges.end_offset
     FROM {db_root}annotator_store_annotations
+	INNER JOIN {db_root}annotator_store_ranges
+	ON {db_root}annotator_store_annotations.id = {db_root}annotator_store_ranges.annotation_id
     '''
 
     annotations = {}
@@ -516,7 +532,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             include = False
         if include:
             aid = annotation[0]
-            annotations[aid] = {
+            a = {
                 'id': aid,
                 'text': annotation[1], 
                 'quote': annotation[2].split('\n    \n')[0].rstrip() if annotation[2] else annotation[2],
@@ -526,8 +542,31 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
                 'post_id': annotation[6], 
                 'creator_id': annotation[7], 
                 'type': annotation[8],
-                'topic_id': annotation[9] 
+                'topic_id': annotation[9], 
+                'start': annotation[10],
+                'end': annotation[11],
+                'start_offset': annotation[12],
+                'end_offset': annotation[13],
+                'overlaps': []
             }
+            annotations[aid] = a
+            if a['post_id'] in posts:
+                posts[a['post_id']]['annotations'].append(a)
+    
+    for post in posts.values():
+        for annotation1 in post['annotations']:
+            aid = annotation1['id']
+            s1 = annotation1['start_offset']
+            e1 = annotation1['end_offset']
+            for annotation2 in post['annotations']:
+                s2 = annotation2['start_offset']
+                e2 = annotation2['end_offset']
+                overlap = False
+                overlap = s1 < s2 < e1 or s2 < s1 < e2
+                if annotation1['id'] == annotation2['id']:
+                    overlap = False
+                if overlap:
+                    annotations[aid]['overlaps'].append(annotation2['id'])
 
     mylogs.info(f'    Got {len(list(annotations.keys()))} annotations.')
 
@@ -1571,6 +1610,11 @@ def graph_create_annotations(driver, data):
             f'SET annotation.creator_id = value.creator_id '
             f'SET annotation.type = value.type '
             f'SET annotation.topic_id = value.topic_id '
+            f'SET annotation.start = value.start '
+            f'SET annotation.end = value.end '
+            f'SET annotation.start_offset = value.start_offset '
+            f'SET annotation.end_offset = value.end_offset '
+            f'SET annotation.overlaps = value.overlaps '
             f'WITH annotation, value '
             f'MATCH (code:code {{discourse_id: value.tag_id, platform: "{dataset}"}}) '
             f'MATCH (post:post {{discourse_id: value.post_id, platform: "{dataset}"}}) '
@@ -1580,6 +1624,15 @@ def graph_create_annotations(driver, data):
             f'CREATE (post)<-[:ANNOTATES]-(annotation) '
             f'CREATE (user)-[:CREATED]->(annotation) '
             f'SET annotation.creator_username = user.username '
+        )
+
+    def tx_create_overlaps(tx, chunk, dataset):
+        tx.run(
+            f'CALL apoc.load.json("file://{data_path}/{dataset}_annotations_{chunk}.json") '
+            f'YIELD value '
+            f'MATCH (annotation:annotation {{discourse_id: value.id}}) '
+            f'MATCH (overlap:annotation) WHERE overlap.discourse_id in annotation.overlaps '
+            f'CREATE (overlap)-[:OVERLAPS]->(annotation) '
         )
 
     for platform in data.values():
@@ -1593,6 +1646,13 @@ def graph_create_annotations(driver, data):
                     mylogs.debug(f'Loaded annotations data from {platform_name}, chunk #{chunk}')
                 except Exception as e:
                     mylogs.error(f'Import failed for annotations on {platform_name}, chunk #{chunk}')
+                    mylogs.error(e)
+            for chunk in range(1, chunks + 1):
+                try:
+                    session.write_transaction(tx_create_overlaps, chunk, platform_name)
+                    mylogs.debug(f'Loaded overlaps data from {platform_name}, chunk #{chunk}')
+                except Exception as e:
+                    mylogs.error(f'Import failed for overlaps on {platform_name}, chunk #{chunk}')
                     mylogs.error(e)
 
 def graph_create_corpus(driver):

@@ -234,6 +234,7 @@ export const typeDefs = gql`
     updated_at: String!
     refers_to: [code] @relation(name: "REFERS_TO", direction: OUT)
     annotates: [post] @relation(name: "ANNOTATES", direction: OUT)
+    overlaps: [annotation] @relation(name: "OVERLAPS", direction: OUT)
   }
 
   type platform {
