@@ -3,6 +3,7 @@ This brief describes an app that is meant to explore the dataset available at ap
 ## Requirements
 
 * A reactive and mobile-first javascript (use ES6 syntax) UI for api.babelbetween.us.
+* Build it with Node.js
 * It is a very simple read-only app, queries only.
 * Every state should be reachable through a route url.
 * api.babelbetween.us is a GraphQL endpoint. I recommend the [urql](https://formidable.com/open-source/urql/docs/) GraphQL client library, but if you want to use Apollo that's alright. If you are planning to use something else, that is probably also fine - just check in with me first.
