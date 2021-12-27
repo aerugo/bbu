@@ -10,6 +10,8 @@ This brief describes an app that is meant to explore the dataset available at ap
 * This is a completely text-based app, so pay a lot of attention to making the text and formatting look good. There is markdown formatting in the raw text you get from the API. Render the markdown and line breaks correctly and make sure it looks good.
 * Use font [Baskervville](https://fonts.google.com/specimen/Baskervville) for everything.
 
+I have made mockup designs for the mobile version, but it should look good on desktop too. Make sure it is beutiful and responsive. Reading this app should feel like reading a well-designed e-book.
+
 ## API 
 
 You can access the API at https://api.babelbetween.us and test queries at https://api.babelbetween.us/graphql. This API is read-only.
