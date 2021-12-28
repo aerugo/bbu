@@ -5,6 +5,7 @@ import hashlib
 import random
 import os
 from neo4j import GraphDatabase
+from difflib import SequenceMatcher
 import numpy as np
 from gibberish import Gibberish
 
@@ -555,6 +556,8 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             if a['post_id'] in posts:
                 posts[a['post_id']]['annotations'].append(a)
     
+    # Find overlaps
+
     for post in posts.values():
         for annotation1 in post['annotations']:
             aid = annotation1['id']
@@ -562,12 +565,11 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             for annotation2 in post['annotations']:
                 q2 = annotation2['quote']
                 overlap = False
-                st1 = set(q1.split())
-                st2 = set(q2.split())
-                c = set(commonwords)
-                st12 = st1 & st2
-                st12diff = st12.difference(c)
-                if len(st12diff) > 2:
+
+                matcher = SequenceMatcher(None, q1, q2, autojunk = False)
+                start1, start2, matchlen = matcher.find_longest_match(0, len(q1), 0, len(q2))
+
+                if matchlen >= min(len(q1), len(q2)):
                     overlap = True
                 if annotation1['quote'] == annotation2['quote']:
                     overlap = True
