@@ -89,7 +89,7 @@ You get the data with this query:
   query {
     annotation: annotation(discourse_id: 7621) {
       discourse_id
-			quote
+      quote
       annotates {
         discourse_id
         in_topic {
