@@ -199,6 +199,8 @@ The menu is not a separate page, just an overlay that can be expanded and minimi
 
 **About** brings you to a simple static about page.
 
+![Codebook default](https://user-images.githubusercontent.com/7785081/147554213-3bb70a85-4ffb-4a3e-a600-42fbdf1cdeb8.png)
+
 This is the text for the about page:
 
 > Babel Between Us is a collaborative literary project exploring the uncharted waters between collaboration, fiction and ethnography.
@@ -210,5 +212,4 @@ This is the text for the about page:
 > In the next step of the project we want to explore other ways to present volumes of annotated text, especially related to prose and poetry. 
 ```
 
-![Codebook default](https://user-images.githubusercontent.com/7785081/147554213-3bb70a85-4ffb-4a3e-a600-42fbdf1cdeb8.png)
 
