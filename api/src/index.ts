@@ -1,6 +1,7 @@
 import path from "path";
 import express, { Express } from "express";
 import http, { Server } from "http";
+import cors from 'cors';
 import { config } from "./config";
 import { errorFilter } from "./error";
 import { register as graphql } from "./graphql";
@@ -17,6 +18,8 @@ const router = express.Router();
 router.get("/ping", function (req, res) {
   res.send("pong");
 });
+
+app.use(cors())
 app.use(router);
 
 // Register error filter
