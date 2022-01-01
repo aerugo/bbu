@@ -157,10 +157,9 @@ Clicking a code brings you to the code screen for that code.
 This query gets you the data you need. By querying for a single post, you also get all posts in the same topic, and all the fragments for each post and the codes that these fragments refer to.
 
 ```
-  query {
-    post: post(discourse_id: 3018) {
+query {
+    post: post(discourse_id: 2940) {
       discourse_id
-      raw
       topic_id
       in_topic {
         discourse_id
@@ -168,18 +167,14 @@ This query gets you the data you need. By querying for a single post, you also g
         posts(orderBy: created_at_asc) {
           discourse_id
           raw
-        }
-      }
-      annotations {
-        discourse_id
-        post_id
-        quote
-        refers_to {
-          name
-          annotations_count
-          cooccurring_codes {
+          annotations {
             discourse_id
-            name
+            quote
+            refers_to {
+              discourse_id
+              name
+              annotations_count
+            }
           }
         }
       }
