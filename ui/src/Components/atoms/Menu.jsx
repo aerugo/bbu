@@ -3,11 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import "../../styles/menu.css";
-
+import { blocked_fragments } from "../../annotation_ids"
 
 function Menu ({ hide }) {
 
-    const randomId = Math.floor((Math.random() * 11500) + 2500);
+    const annotations = Array.from({length:10500},(v,k)=>k+1).filter(x => !blocked_fragments.includes(x));
+    const randomId = annotations[Math.floor(Math.random() * annotations.length)];
 
     const links = [
         { label: "Codebook", value: "codes" },
