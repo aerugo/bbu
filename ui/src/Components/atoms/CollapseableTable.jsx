@@ -17,11 +17,14 @@ function CollapseAbleTable ({
                 gridTemplateColumns: "40px calc(100% - 40px)"
             }}
         >
-            <div>
-                <span 
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                >
-                <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronDown} />
+            <div
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                style={{
+                    width: "200px"
+                }}
+            >
+                <span>
+                    <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronDown} />
                 </span>
             </div>
             <div>

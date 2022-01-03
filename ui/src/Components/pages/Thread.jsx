@@ -9,6 +9,7 @@ import { TOPIC } from "../../gqls";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import "../../styles/thread.css";
 
 function Thread () {
 
@@ -70,15 +71,13 @@ function Thread () {
                             </ReactMarkdown>
                         </p>
                             <br/>
-                            <CollapseAbleTable 
+                            { post?.annotations &&
+                                <CollapseAbleTable 
                                 defaultIsCollapsed={true}
                                 header={
                                     <tr>
                                         <td style={{ width: 40 }}>
                                             <FontAwesomeIcon icon={faPenFancy}/>
-                                        </td>
-                                        <td>
-                                            <b>Themes</b>
                                         </td>
                                     </tr>
                                 }
@@ -91,7 +90,8 @@ function Thread () {
                                         </React.Fragment>
                                     ))
                                 )}
-                            />
+                                />
+                            }
                         </div>
                     ))
                 }

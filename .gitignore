@@ -1,6 +1,7 @@
 import/db/
 ryderex-import.log
 config.json
+experiments.py
 
 node_modules/
 build/

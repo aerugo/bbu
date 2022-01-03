@@ -2,6 +2,7 @@ import psycopg2
 import logging
 import json
 import hashlib
+import base62
 import itertools
 import random
 import os
@@ -408,11 +409,13 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'quoted_post_id': quote[1]
         }
 
-    # Replace Discourse quote syntax with markdown quote and link
+    # Replace Discourse quote syntax with markdown quote and link, replace link hash, edit fork links
 
     for pid, post in posts.items():
         if post['quotes_posts']:
             content = post['raw']
+            
+            # Replace Discourse quote with markdown syntax
             quote_data = [
                 {
                     "discourse_id": post_id,
@@ -446,6 +449,27 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
 
             processed = ''.join([fragment for fragment in itertools.chain.from_iterable(itertools.zip_longest(post_quotes, texts) if content[:7] == '[quote=' else itertools.zip_longest(texts, post_quotes)) if fragment])
             posts[pid]['raw'] = processed
+            
+        # Replace base62 image reference with full upload link
+
+        for pid, post in posts.items():
+            image_urls = re.findall(r'upload://([^\)]*)', posts[pid]['raw'])
+            server_url = 'https://bbu.world/uploads/babelbetweenus/original/1X/'
+            for image in image_urls:
+                try:
+                    il = image.split('.')
+                    b62 = il[0]
+                    if len(il) > 1:
+                        extension = f'.{il[1]}'
+                    else:
+                        # If no extension, guess png
+                        extension = '.png'
+                    rebase = hex(base62.decode(b62, base62.CHARSET_INVERTED))[2:].zfill(40)
+                    image = server_url + rebase + extension
+                    posts[pid]['raw'] = posts[pid]['raw'].replace(f'upload://{b62}{extension}', image)
+                except:
+                    mylogs.error(f'Failed updating image url for post {pid}')
+            
 
     replies = {}
     db_cursor.execute(replies_query)

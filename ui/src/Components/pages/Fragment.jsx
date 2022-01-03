@@ -72,9 +72,6 @@ function Fragment () {
                     <td>
                         <FontAwesomeIcon icon={faProjectDiagram}/>
                     </td>
-                    <td>
-                        Themes
-                    </td>
                 </tr>
                 {
                     data?.refers_to?.map(item => (
