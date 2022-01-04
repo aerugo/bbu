@@ -2,9 +2,10 @@ import { gql } from "@apollo/client";
 
 export const CODES = gql`
 query {
-    code(filter: { annotations_count_gt: 1 }, orderBy: name_asc) {
+    code(filter: { annotations_count_gt: 1 }, orderBy: name_normalized_asc) {
       discourse_id
       name
+      name_normalized
       description
       annotations_count
     }

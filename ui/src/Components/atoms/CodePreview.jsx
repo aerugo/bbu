@@ -9,7 +9,7 @@ function CodePreview ({
     return (
         <div className="code-preview-container">
             <a className="code-preview-heading" href={"/codes/" + id}>
-                {name} ({annotationsCount})
+                {name.toLowerCase()} ({annotationsCount})
             </a>
             <p className="code-preview-desc">
                 {description}

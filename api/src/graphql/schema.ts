@@ -146,6 +146,7 @@ export const typeDefs = gql`
     description: String
     discourse_id: Int!
     name: String
+    name_normalized: String
     platform: String!
     updated_at: String!
     on_platform: [platform] @relation(name: "ON_PLATFORM", direction: OUT)
@@ -168,6 +169,7 @@ export const typeDefs = gql`
           WITH {
               discourse_id: cooccurring_code.discourse_id,
               name: cooccurring_code.name,
+              name_normalized: cooccurring_code.name_normalized,
               description: cooccurring_code.description, 
               cooccurrences: r.count,
               annotations_count: cooccurring_code.annotations_count,
@@ -182,6 +184,7 @@ export const typeDefs = gql`
   type cooccurring_code {
     discourse_id: Int
     name: String
+    name_normalized: String
     annotations_count: Int
     description: String
     cooccurrences: Int

@@ -558,6 +558,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
         annotator_code_names[nid] = {
             'id': nid,
             'name': name[1],
+            'name_normalized': name[1].lower().strip('"').strip("'"),
             'tag_id': name[2],
             'language_id': name[3],
             'created_at':name[4]
@@ -1637,6 +1638,7 @@ def graph_create_code_names(driver, data):
             f'YIELD value '
             f'CREATE (codename:codename {{discourse_id: value.id, platform: "{dataset}"}}) '
             f'SET codename.name = value.name '
+            f'SET codename.name_normalized = value.name_normalized '
             f'SET codename.code_id = value.tag_id '
             f'SET codename.language_id = value.language_id '
             f'SET codename.created_at = value.created_at '
@@ -1648,7 +1650,8 @@ def graph_create_code_names(driver, data):
             f'CREATE (codename)-[:IN_LANGUAGE]->(language) '
             f'WITH code, codename, language '
             f'CALL apoc.do.when(language.locale = "en",'
-            f'"SET code.name = codename.name",'
+            f'"SET code.name = codename.name '
+            f'SET code.name_normalized = codename.name_normalized",'
             f'"",'
             f'{{code:code, codename:codename, language:language}}) '
             f'YIELD value AS value2 '

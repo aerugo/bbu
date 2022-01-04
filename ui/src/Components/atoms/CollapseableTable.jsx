@@ -1,4 +1,4 @@
-import { faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faPenFancy, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
@@ -13,8 +13,7 @@ function CollapseAbleTable ({
     return (
         <div
             style={{
-                display: "grid",
-                gridTemplateColumns: "40px calc(100% - 40px)"
+                display: "grid"
             }}
         >
             <div
@@ -24,6 +23,11 @@ function CollapseAbleTable ({
                 }}
             >
                 <span>
+                    <FontAwesomeIcon icon={faPenFancy}
+                        style={{
+                            marginRight: "1em"
+                        }}
+                    />
                     <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronDown} />
                 </span>
             </div>

@@ -84,7 +84,7 @@ function Fragment () {
                                     {item.cooccurring_codes.length}
                                 </span>
                             </td>
-                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name}</Link></td>
+                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
                         </tr>
                     ))
                 }
@@ -100,7 +100,7 @@ function Fragment () {
                                         {item.cooccurring_codes.length}
                                     </span>
                                 </td>
-                                <td><Link to={`/codes/${item.discourse_id}`}>{item.name}</Link></td>
+                                <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
                             </tr>
                         ))
                     })

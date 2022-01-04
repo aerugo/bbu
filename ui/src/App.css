@@ -29,6 +29,10 @@ a {
   color: black;
 }
 
+a:visited {
+  color: rgb(104, 104, 104);
+}
+
 img {
   max-width: 80%;
   max-height: 30em;

@@ -29,7 +29,7 @@ function Code () {
     return (
         <>
             <AppHeader 
-                name={data?.name || "..."}
+                name={data?.name.toLowerCase() || "..."}
             />
             <p style={{ fontStyle: "italic" }}>
                 { data?.description }

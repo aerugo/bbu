@@ -71,13 +71,12 @@ function Thread () {
                             </ReactMarkdown>
                         </p>
                             <br/>
-                            { post?.annotations &&
+                            { post?.annotations.length > 0 &&
                                 <CollapseAbleTable 
                                 defaultIsCollapsed={true}
                                 header={
                                     <tr>
                                         <td style={{ width: 40 }}>
-                                            <FontAwesomeIcon icon={faPenFancy}/>
                                         </td>
                                     </tr>
                                 }
@@ -86,7 +85,7 @@ function Thread () {
                                     row.refers_to.map(item => (
                                         <React.Fragment key={item.discourse_id}>
                                             <td><span className="circle-count">{item.annotations_count}</span></td>
-                                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name}</Link></td>
+                                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
                                         </React.Fragment>
                                     ))
                                 )}
