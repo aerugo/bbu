@@ -12,17 +12,13 @@ In the next step of the project we want to explore other ways to present volumes
 
 There are multiple ways to explore BBU at the moment.
 
+## Babel Explorer
+
+You can exlplore the world of BBU through explore.babelbetween.us. This is the most straight forward and simple way to experience the project.
+
 ## bbu.world forum
 
 Explore BBU as it was originally written on [bbu.world](https://bbu.world/c/babel-between-us/9). Unfortunately, the annotation interface is not publicly available without being logged in with the right user authorization. This is only because [our annotation tool](https://github.com/edgeryders/annotator_store-gem) does not offer a public read-only mode. 
-
-## babelbetween.us reader
-
-We developed [a simple "reader" web application](https://babelbetween.us/#/) that shows forum threads as continuous text with a nice layout. This is the most traditional and linear way to read BBU.
-
-## codebook 
-
-Over 14,000 annotations were made using almost 3,000 individual concepts or "codes". Most of these codes have definitions that were written by the annotators. Some codes like "pandemic" were used over 50 times, while other codes like "parable" were used only once. We developed a [simple "codebook"](https://codes.bbu.world/) to quickly look up codes and their definitions. 
 
 ## SSNA and dashboard
 
@@ -36,7 +32,7 @@ Our entire dataset is available through our [GraphQl API](http://207.154.248.234
 
 # Codes as worlds
 
-Our first exploration will be to focus on codes and their cooccurring codes, as well as the annotations that refer to those codes. We want to design an experience where one can "travel" between codes, exploring the "cooccurrence space" of one code at a time. 
+We are currently experimenting with different ways to experience the Babel unvierse. Our first exploration will be to focus on codes and their cooccurring codes, as well as the annotations that refer to those codes. We want to design an experience where one can "travel" between codes, exploring the "cooccurrence space" of one code at a time. 
 
 We want the person experiencing this view of BBU to see a central focus code in the middle of a "universe" where the other codes that it cooccurs with (filtered to some degree) are shown around it. It should be possible to tell from looking at a code if it has relatively many or few uses, as well as if it co-occurs with relatively many or few other codes at the degree of cooccurrence one is using. 
 
