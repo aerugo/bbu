@@ -1,4 +1,5 @@
 import React from "react";
+import {Helmet} from "react-helmet";
 import AppHeader from "../atoms/AppHeader";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenFancy, faProjectDiagram, faShare } from "@fortawesome/free-solid-svg-icons";
@@ -32,6 +33,12 @@ function Fragment () {
 
     return (
         <>
+            <Helmet>
+                <title>Babel Between Us: Fragment</title>
+                <meta property="og:type"               content="fiction" />
+                <meta property="og:title"              content="Babel Between Us: Fragment" />
+                <meta property="og:description"        content={data?.quote} />
+            </Helmet>
             <AppHeader name="" />
             <p>
                 <ReactMarkdown>

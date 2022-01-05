@@ -1,8 +1,7 @@
 import React from "react";
+import {Helmet} from "react-helmet";
 import AppHeader from "../atoms/AppHeader";
 import CollapseAbleTable from "../atoms/CollapseableTable";
-import { faPenFancy } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useQuery } from "@apollo/client";
 import Loading from "../atoms/Loading";
 import { TOPIC } from "../../gqls";
@@ -35,13 +34,21 @@ function Thread () {
             window.scrollBy(0, -60);
         }
     }, [data]);
-
+    
     if (loading) {
         return <Loading />
     }
     
     return (
         <>
+
+            <Helmet>
+                <title>{data?.title}</title>
+                <meta property="og:type"               content="fiction" />
+                <meta property="og:title"              content={data?.title} />
+                <meta property="og:description"        content={data?.posts?.find(element=>element!==undefined).raw.slice(0,300)} />
+            </Helmet>
+
             <div
                 style={{
                     position: "sticky",

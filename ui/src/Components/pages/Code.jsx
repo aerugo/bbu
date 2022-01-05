@@ -1,4 +1,5 @@
 import React from "react";
+import {Helmet} from "react-helmet";
 import AppHeader from "../atoms/AppHeader";
 import { FULLCODE } from "../../gqls";
 import { useQuery } from "@apollo/client";
@@ -28,6 +29,14 @@ function Code () {
 
     return (
         <>
+
+            <Helmet>
+                <title>{data?.name.toLowerCase()}</title>
+                <meta property="og:type"               content="fiction" />
+                <meta property="og:title"              content={data?.name.toLowerCase()} />
+                <meta property="og:description"        content={data?.description} />
+            </Helmet>
+
             <AppHeader 
                 name={data?.name.toLowerCase() || "..."}
             />

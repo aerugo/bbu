@@ -1,10 +1,19 @@
 import React from "react";
+import {Helmet} from "react-helmet";
 import AppHeader from "../atoms/AppHeader";
 
 function About () {
 
     return (
         <>
+
+            <Helmet>
+                <title>Babel Between Us</title>
+                <meta property="og:type"               content="fiction" />
+                <meta property="og:title"              content="Babel Between Us" />
+                <meta property="og:description"        content="Babel Between Us is a collaborative literary project exploring the uncharted waters between collaboration, fiction and ethnography." />
+            </Helmet>
+
             <AppHeader 
                 name="Babel Between Us"
             />
