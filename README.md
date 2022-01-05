@@ -14,7 +14,7 @@ There are multiple ways to explore BBU at the moment.
 
 ## Babel Explorer
 
-You can exlplore the world of BBU through explore.babelbetween.us. This is the most straight forward and simple way to experience the project.
+You can exlplore the world of BBU through [explore.babelbetween.us](https://explore.babelbetween.us/). This is the most straight forward and simple way to experience the project.
 
 ## bbu.world forum
 
