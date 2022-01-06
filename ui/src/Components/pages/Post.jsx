@@ -14,7 +14,7 @@ function Post () {
 
     const params = useParams();
     const { data:response, loading } = useQuery(POST, {
-        variables: { discourse_id: parseInt(params.id) }
+        variables: { id: parseInt(params.id) }
     });
     const [data, setData] = React.useState(null);
 
@@ -67,10 +67,10 @@ function Post () {
                         data={data?.annotations}
                         rowRenderer={(row) => (
                             row.refers_to.map(item => (
-                                <React.Fragment key={item.discourse_id}>
+                                <React.Fragment key={item.id}>
                                     <td><span className="circle-count">{item.annotations_count}</span></td>
                                     <td><span className="circle-count">{item.cooccurring_codes.length}</span></td>
-                                    <td><Link to={`/codes/${item.discourse_id}`}>{item.name}</Link></td>
+                                    <td><Link to={`/codes/${item.id}`}>{item.name}</Link></td>
                                 </React.Fragment>
                             ))
                         )}

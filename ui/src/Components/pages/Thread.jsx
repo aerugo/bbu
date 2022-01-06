@@ -14,7 +14,7 @@ function Thread () {
 
     const params = useParams();
     const { data:response, loading } = useQuery(TOPIC, {
-        variables: { discourse_id: parseInt(params.id) }
+        variables: { id: parseInt(params.id) }
     });
     const [data, setData] = React.useState(null);
 
@@ -65,7 +65,7 @@ function Thread () {
             <div>
                 {
                     data?.posts?.map((post, index) => (
-                        <div id={`p${post.discourse_id}`} key={index}>
+                        <div id={`p${post.id}`} key={index}>
                         <p
                             style={{
                                 whiteSpace: "pre-line",
@@ -90,9 +90,9 @@ function Thread () {
                                 data={post?.annotations}
                                 rowRenderer={(row) => (
                                     row.refers_to.map(item => (
-                                        <React.Fragment key={item.discourse_id}>
+                                        <React.Fragment key={item.id}>
                                             <td><span className="circle-count">{item.annotations_count}</span></td>
-                                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
+                                            <td><Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link></td>
                                         </React.Fragment>
                                     ))
                                 )}

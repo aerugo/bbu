@@ -49,7 +49,7 @@ We have defined the "codes" type on the GraphQl endpoint to return the data you 
 ```
 query {
   code: code(name: "Mother") {
-    discourse_id
+    id
     name
     description
     annotations_count
@@ -58,7 +58,7 @@ query {
       post_id
     }
     cooccurring_codes {
-      discourse_id
+      id
       name
       annotations_count
       description

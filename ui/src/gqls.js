@@ -3,7 +3,7 @@ import { gql } from "@apollo/client";
 export const CODES = gql`
 query {
     code(filter: { annotations_count_gt: 1 }, orderBy: name_normalized_asc) {
-      discourse_id
+      id
       name
       name_normalized
       description
@@ -14,13 +14,13 @@ query {
 
 export const FULLCODE = gql`
 query FullCode($discource_id: Int!){
-    code: code(discourse_id: $discource_id) {
-      discourse_id
+    code: code(id: $discource_id) {
+      id
       name
       description
       annotations_count
       annotations {
-        discourse_id
+        id
         quote
         post_id
       }
@@ -30,33 +30,33 @@ query FullCode($discource_id: Int!){
 
 export const ANNOTATION = gql`
 query Annotation($discource_id: Int!){
-    annotation: annotation(discourse_id: $discource_id) {
-      discourse_id
+    annotation: annotation(id: $discource_id) {
+      id
       quote
       annotates {
-        discourse_id
+        id
         in_topic {
-          discourse_id
+          id
           title
         }
       }
       refers_to {
-        discourse_id
+        id
         name
         annotations_count
     		cooccurring_codes {
-          discourse_id
+          id
           name
         }
       }
       overlaps {
-        discourse_id
+        id
           refers_to {
-            discourse_id
+            id
             name
             annotations_count
             cooccurring_codes {
-              discourse_id
+              id
               name
             }
           }
@@ -66,29 +66,29 @@ query Annotation($discource_id: Int!){
 `;
 
 export const POST = gql`
-query Post($discourse_id: Int!){
-    post: post(discourse_id: $discourse_id) {
-      discourse_id
+query Post($id: Int!){
+    post: post(id: $id) {
+      id
       raw
       topic_id
       in_topic {
-        discourse_id
+        id
         title
         posts(orderBy: created_at_asc) {
-          discourse_id
+          id
           raw
         }
       }
       annotations {
-        discourse_id
+        id
         post_id
         quote
         refers_to {
-          discourse_id
+          id
           name
           annotations_count
           cooccurring_codes {
-            discourse_id
+            id
             name
           }
         }
@@ -99,17 +99,17 @@ query Post($discourse_id: Int!){
 `
 
 export const TOPIC = gql`
-query Topic($discourse_id: Int!) {
-    topic(discourse_id: $discourse_id) {
+query Topic($id: Int!) {
+    topic(id: $id) {
       title,
       posts (orderBy: created_at_asc) {
-        discourse_id
+        id
         raw
         annotations {
           refers_to {
             annotations_count
             name
-            discourse_id
+            id
           }
         }
       }
