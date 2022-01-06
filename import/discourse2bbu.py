@@ -12,8 +12,6 @@ from difflib import SequenceMatcher
 import numpy as np
 from gibberish import Gibberish
 
-commonwords = ['the','of','to','and','a','in','is','it','you','that','he','was','for','on','are','with','as','I','his','they','be','at','one','have','this','from','or','had','by','not','word','but','what','some','we','can','out','other','were','all','there','when','up','use','your','how','said','an','each','she','which','do','their','time','if','will','way','about','many','then','them','write','would','like','so','these','her','long','make','thing','see','him','two','has','look','more','day','could','go','come','did','number','sound','no','most','people','my','over','know','water','than','call','first','who','may','down','side','been','now','find']
-
 # Python version 3.8.6
 # For this script to work, neo4j must have APOC installed and the neo4j.conf file 
 # must have the following properties set:
@@ -56,9 +54,6 @@ def dumpSplit(data_topic, data_set, data, stats):
 
 def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_policy, pseudonymize_users, omit_codes_prefix):
     # This function gets the data we need from the Discourse psql database.
-    # It assumes that the database is built from backup dumps. 
-    # If running on the live database, 'backup' in the database names should be changed.
-    # TODO: make the database name into a variable to enable loading from backup or live db
 
     mylogs.info(f'Loading new data from {db_name}')
 
@@ -83,7 +78,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     }
     mylogs.info(f'    Loading data from {site["url"]} database...')
 
-    # Get users, consent, group memberships
+    # Get users and consent
 
     users_query = f'''
     SELECT
@@ -97,12 +92,6 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     user_id, value, updated_at 
     FROM {db_root}user_custom_fields 
     WHERE name = 'edgeryders_consent';
-    '''
-
-    group_members_query = f'''
-    SELECT
-    group_id, user_id
-    FROM {db_root}group_users
     '''
 
     users = {}
@@ -128,7 +117,6 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'id': uid,
             'username': user[1],
             'email': email,
-            'groups': [],
             'consent': 0,
             'consent_updated': 0
         }
@@ -138,7 +126,6 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
         'id': -100,
         'username': "Unknown",
         'email': "Unknown",
-        'groups': [],
         'consent': 0,
         'consent_updated': 0
     }
@@ -153,73 +140,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             users[uid]['consent'] = 0
         users[uid]['consent_updated'] = user[2]
 
-    db_cursor.execute(group_members_query)
-    group_members_data = db_cursor.fetchall()
-    for group_member in group_members_data:
-        uid = group_member[1]
-        users[uid]['groups'].append(group_member[0])
-
     mylogs.info(f'    Got {len(users.keys())} users')
-
-    # Get groups
-
-    groups_query = f'''
-    SELECT 
-    id, name, visibility_level 
-    FROM {db_root}groups
-    '''
-
-    groups = {}
-    db_cursor.execute(groups_query)
-    group_data = db_cursor.fetchall()
-    for group in group_data:
-        gid = group[0]
-        groups[gid] = {
-            'id': gid,
-            'name': group[1],
-            'visibility_level': group[2]
-        }
-
-    mylogs.info(f'    Got {len(groups.keys())} groups')
-
-    # Get categories
-
-    categories_query = f'''
-    SELECT
-    id, name, name_lower, created_at, updated_at, read_restricted, parent_category_id
-    FROM {db_root}categories
-    '''
-
-    categories_permissions = f'''
-    SELECT
-    id, category_id, group_id, permission_type
-    FROM {db_root}category_groups
-    '''
-
-    categories = {}
-    db_cursor.execute(categories_query)
-    category_data = db_cursor.fetchall()
-    for category in category_data:
-        cid = category[0]
-        categories[cid] = {
-            'id': cid,
-            'name': category[1], 
-            'name_lower': category[2],
-            'created_at': category[3], 
-            'updated_at': category[4], 
-            'read_restricted': category[5], 
-            'parent_category_id': category[6],
-            'permissions': []
-        }
-
-    # Group 0 is 'everyone' and permission_type is an integer 1 = Full 2 = Reply and read 3 = Read Only
-    db_cursor.execute(categories_permissions)
-    category_permission_data = db_cursor.fetchall()
-    for permission in category_permission_data:
-        cid = permission[1]
-        categories[cid]['permissions'].append(permission[2])
-
-    mylogs.info(f'    Got {len(categories.keys())} categories')
 
     # Get tags
 
@@ -249,7 +170,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
 
     topics_query = f'''
     SELECT
-    id, title, created_at, updated_at, user_id, category_id
+    id, title, created_at, updated_at, user_id
     FROM {db_root}topics
     '''
 
@@ -280,8 +201,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     lost_topics = set()
     for topic in topics_data:
         tid = topic[0]
-        cid = topic[5] if topic[5] in categories.keys() else None
-        read_restricted = True if tid in pm_topic_set or not cid else categories[cid]['read_restricted']
+        read_restricted = True if tid in pm_topic_set else False
         if topic[4] in users.keys() and users[topic[4]]['consent'] == 1:
             consenting = True
         else:
@@ -299,7 +219,6 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'updated_at': topic[3],
             'user_id': -100 if tid in pm_topic_set or topic[4] not in users.keys() else topic[4],
             'is_message_thread': True if tid in pm_topic_set else False,
-            'category_id': cid,
             'read_restricted': read_restricted,
             'allowed_users': [],
             'tags': []
@@ -409,7 +328,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'quoted_post_id': quote[1]
         }
 
-    # Replace Discourse quote syntax with markdown quote and link, replace link hash, edit fork links
+    # Replace Discourse quote syntax with markdown quote and link, replace link hash
 
     for pid, post in posts.items():
         if post['quotes_posts']:
@@ -418,7 +337,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             # Replace Discourse quote with markdown syntax
             quote_data = [
                 {
-                    "discourse_id": post_id,
+                    "id": post_id,
                     "topic_id": posts[post_id]['topic_id'],
                     "post_number": posts[post_id]['post_number'],
                     "topic_title": topics[posts[post_id]['topic_id']]['title']
@@ -437,11 +356,11 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
                 except:
                     continue
 
-                d = [(q['discourse_id'], q['topic_title']) for q in quote_data if q['topic_id'] == tid and q['post_number'] == target_pid]
+                d = [(q['id'], q['topic_title']) for q in quote_data if q['topic_id'] == tid and q['post_number'] == target_pid]
                 if not d:
                     continue
 
-                post_id, topic_title = [(q['discourse_id'], q['topic_title']) for q in quote_data if q['topic_id'] == tid and q['post_number'] == target_pid][0]
+                post_id, topic_title = [(q['id'], q['topic_title']) for q in quote_data if q['topic_id'] == tid and q['post_number'] == target_pid][0]
                 
                 ref = f'> *In reference to [{topic_title}](/post/{tid}#{post_id})*: {q[1]}'
                 ref = '\n> '.join([s for s in ref.split('\n') if s])
@@ -450,7 +369,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             processed = ''.join([fragment for fragment in itertools.chain.from_iterable(itertools.zip_longest(post_quotes, texts) if content[:7] == '[quote=' else itertools.zip_longest(texts, post_quotes)) if fragment])
             posts[pid]['raw'] = processed
             
-        # Replace base62 image reference with full upload link
+        # Replace base62 image reference in Discourse with full upload link
 
         for pid, post in posts.items():
             image_urls = re.findall(r'upload://([^\)]*)', posts[pid]['raw'])
@@ -665,7 +584,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     else: 
         redact_protected_content = False
 
-    # Omit protected content (posts, categories, groups) from the graph.
+    # Omit protected content from the graph.
     # Content that is not readable by all logged in users is considered protected.
     # This also omits 'hidden' posts, also known as 'whispers'.
     # In the future, we may want to handle 'hidden' posts separately if we 
@@ -691,31 +610,6 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             pseudonyms.append(name)
             new[u]['username'] = name
     users = new
-
-    new = dict(groups)
-    # Group visibility levels, public=0, logged_on_users=1, members=2, staff=3, owners=4
-    for g, d in groups.items():
-        if redact_protected_content and d['visibility_level'] > 1:
-            new[g]['name'] = '[Redacted]'
-            continue
-        if omit_protected_content and d['visibility_level'] > 1:
-            del(new[g])
-            continue
-    groups = new
-
-    new = dict(categories)
-    for c, d in categories.items():
-        if redact_protected_content and d['read_restricted']:
-            new[c]['name'] = '[Redacted]'
-            new[c]['name'] = '[Redacted]'
-            continue
-        if omit_protected_content and d['read_restricted']:
-            del(new[c])
-            continue
-        for group in d['permissions']:
-            if group not in groups.keys():
-                new[c]['permissions'].remove(group)
-    categories = new
 
     new = dict(topics)
     for t, d in topics.items():
@@ -804,9 +698,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
         'omit_protected': omit_protected_content,
         'omit_system_users': omit_system_users,
         'users': len(users.keys()),
-        'groups': len(groups.keys()),
         'tags': len(tags.keys()),
-        'categories': len(categories.keys()),
         'topics': len(topics.keys()),
         'pm_threads': pm_count,
         'topics_by_deleted_users': len(lost_topics),
@@ -823,9 +715,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
         'stats': stats,
         'site': site,
         'users': users,
-        'groups': groups,
         'tags': tags,
-        'categories': categories,
         'topics': topics,
         'posts': posts,
         'replies': replies,
@@ -888,9 +778,7 @@ def reload_data(dbs):
             json.dump(d['site'], file, default=str)
 
         stats = dumpSplit('users', db['name'], list(d['users'].values()), stats)
-        stats = dumpSplit('groups', db['name'], list(d['groups'].values()), stats)
         stats = dumpSplit('tags', db['name'], list(d['tags'].values()), stats)
-        stats = dumpSplit('categories', db['name'], list(d['categories'].values()), stats)
         stats = dumpSplit('topics', db['name'], list(d['topics'].values()), stats)
         stats = dumpSplit('posts', db['name'], list(d['posts'].values()), stats)
         stats = dumpSplit('replies', db['name'], list(d['replies'].values()), stats)
@@ -930,9 +818,7 @@ def load_data(dbs):
     for k,d in data.items():
         mylogs.info(f'-------| {k} |-------')
         mylogs.info(f'{len(d["users"])} users')
-        mylogs.info(f'{len(d["groups"])} groups')
         mylogs.info(f'{len(d["tags"])} tags.')
-        mylogs.info(f'{len(d["categories"])} tags.')
         mylogs.info(f'{len(d["topics"])} topics and {d["stats"]["pm_threads"]} PM threads.')
         mylogs.info(f'{d["stats"]["tags_applied"]} tag applications to topics.')
         mylogs.info(f'{len(d["posts"])} posts and {d["stats"]["messages"]} private messages.')
@@ -1011,47 +897,6 @@ def graph_create_platform(driver, data):
 
     mylogs.info('Loaded all platforms.')
 
-def graph_create_groups(driver, data):
-    # Add user groups function
-
-    def tx_create_groups(tx, chunk, dataset):
-        tx.run(
-            f'CALL apoc.load.json("file://{data_path}/{dataset}_groups_{chunk}.json") '
-            f'YIELD value '
-            f'MERGE (g:group {{discourse_id: value.id, platform: "{dataset}"}}) '
-            f'SET g.name = value.name '
-            f'WITH g, value '
-            f'MATCH (p:platform {{name: "{dataset}"}}) '
-            f'WITH g, p '
-            f'MERGE (p)<-[:ON_PLATFORM]-(g) '
-        )
-
-    def tx_create_group_index(tx):
-        tx.run(
-            f'CREATE INDEX group IF NOT EXISTS '
-            f'FOR (g:group) '
-            f'ON (g.discourse_id, g.platform) '
-        )
-
-    with driver.session() as session:
-        session.write_transaction(tx_create_group_index)
-        mylogs.info('Created group index')
-
-    for platform in data.values():
-        with driver.session() as session:
-            platform_name = platform['site']['name']
-            topic = 'groups'
-            chunks = platform['stats']['chunk_sizes'][topic]
-            for chunk in range(1, chunks + 1):
-                try:
-                    session.write_transaction(tx_create_groups, str(chunk), platform_name)
-                    mylogs.debug(f'Loaded group data from {platform_name}, chunk #{chunk}')
-                except Exception as e:
-                    mylogs.error(f'Import failed for groups on {platform_name}, chunk #{chunk}')
-                    mylogs.error(e)
-
-    mylogs.info('Added all groups')
-
 def graph_create_users(driver, data):
     # Add users function
 
@@ -1059,53 +904,28 @@ def graph_create_users(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_users_{chunk}.json") '
             f'YIELD value '
-            f'MERGE (u:user {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'MERGE (u:user {{id: value.id, platform: "{dataset}"}}) '
             f'SET u.username = value.username '
             f'SET u.email = value.email '
             f'SET u.consent = value.consent '
             f'SET u.consent_updated = value.consent_updated '
-            f'SET u.groups = value.groups '
             f'WITH u, value '
             f'MATCH (p:platform {{name: "{dataset}"}}) '
             f'WITH u, p, value '
             f'MERGE (p)<-[:ON_PLATFORM]-(u) '
             f'SET u.profile = p.url + "/u/" + u.username '
-            f'WITH u, value '
-            f'UNWIND value.groups AS gids '
-            f'MATCH (g:group {{discourse_id: gids, platform: "{dataset}"}}) '
-            f'WITH u, g, value '
-            f'CREATE (u)-[:IN_GROUP]->(g) '
-            f'MERGE (global:globaluser {{email: value.email}}) '
-            f'SET global.username = value.username '
-            f'WITH global, u '
-            f'MERGE (u)-[:IS_GLOBAL_USER]->(global)'
-            f'WITH global '
-            f'MATCH (p:platform {{name:"{dataset}" }}) '
-            f'WITH p, global '
-            f'MERGE (p)<-[:HAS_ACCOUNT_ON]-(global)'
         )
 
     def tx_create_user_index(tx):
         tx.run(
             f'CREATE INDEX user IF NOT EXISTS '
             f'FOR (u:user) '
-            f'ON (u.discourse_id, u.platform) '
-        )
-
-    def tx_create_globaluser_index(tx):
-        tx.run(
-            f'CREATE INDEX global IF NOT EXISTS '
-            f'FOR (g:globaluser) '
-            f'ON (g.email) '
+            f'ON (u.id, u.platform) '
         )
 
     with driver.session() as session:
         session.write_transaction(tx_create_user_index)
         mylogs.info('Created user index')
-
-    with driver.session() as session:
-        session.write_transaction(tx_create_globaluser_index)
-        mylogs.info('Created globaluser index')
 
     for platform in data.values():
         with driver.session() as session:
@@ -1129,7 +949,7 @@ def graph_create_tags(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_tags_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (tag:tag {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (tag:tag {{id: value.id, platform: "{dataset}"}}) '
             f'SET tag.name = value.name '
             f'SET tag.topic_count = value.topic_count '
             f'SET tag.created_at = value.created_at '
@@ -1144,7 +964,7 @@ def graph_create_tags(driver, data):
         tx.run(
             f'CREATE INDEX tag IF NOT EXISTS '
             f'FOR (t:tag) '
-            f'ON (t.discourse_id, t.platform) '
+            f'ON (t.id, t.platform) '
         )
 
     with driver.session() as session:
@@ -1166,63 +986,6 @@ def graph_create_tags(driver, data):
 
     mylogs.info('Added all tags')
 
-def graph_create_categories(driver, data):
-    # Add categories
-
-    def tx_create_categories(tx, chunk, dataset):
-        tx.run(
-            f'CALL apoc.load.json("file://{data_path}/{dataset}_categories_{chunk}.json") '
-            f'YIELD value '
-            f'MERGE (c:category {{discourse_id: value.id, platform: "{dataset}"}}) '
-            f'SET c.name = value.name '
-            f'SET c.name_lower = value.name_lower '
-            f'SET c.created_at = value.created_at '
-            f'SET c.updated_at = value.updated_at '
-            f'SET c.read_restricted = value.read_restricted '
-            f'SET c.parent_category_id = value.parent_category_id '
-            f'SET c.permissions = value.permissions '
-            f'WITH c, value '
-            f'MATCH (p:platform {{name: "{dataset}"}}) '
-            f'CREATE (p)<-[:ON_PLATFORM]-(c) '
-            f'WITH c, value '
-            f'UNWIND value.permissions AS permissions '
-            f'MATCH (g:group {{discourse_id: permissions, platform: "{dataset}"}}) '
-            f'MERGE (g)-[:HAS_ACCESS]->(c) '
-            f'WITH c, value '
-            f'CALL apoc.do.when(value.parent_category_id IS NOT NULL,'
-            f'"MERGE (c)<-[:PARENT_CATEGORY_OF]-(ca:category {{discourse_id: value.parent_category_id, platform: dataset}})",'
-            f'"",'
-            f'{{c:c, value:value, dataset: c.platform}}) '
-            f'YIELD value AS value2 '
-            f'RETURN value2 '
-        )
-
-    def tx_create_category_index(tx):
-        tx.run(
-            f'CREATE INDEX categories IF NOT EXISTS '
-            f'FOR (g:category) '
-            f'ON (g.discourse_id, g.platform) '
-        )
-
-    with driver.session() as session:
-        session.write_transaction(tx_create_category_index)
-        mylogs.info('Created category index')
-
-    for platform in data.values():
-        with driver.session() as session:
-            platform_name = platform['site']['name']
-            topic = 'categories'
-            chunks = platform['stats']['chunk_sizes'][topic]
-            for chunk in range(1, chunks + 1):
-                try:
-                    session.write_transaction(tx_create_categories, chunk, platform_name)
-                    mylogs.debug(f'Loaded category data from {platform_name}, chunk #{chunk}')
-                except Exception as e:
-                    mylogs.error(f'Import failed for categories on {platform_name}, chunk #{chunk}')
-                    mylogs.error(e)
-
-    mylogs.info('Added all categories')
-
 def graph_create_topics(driver, data):
     # Add topics
 
@@ -1230,26 +993,22 @@ def graph_create_topics(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_topics_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (t:topic {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (t:topic {{id: value.id, platform: "{dataset}"}}) '
             f'SET t.title = value.title '
             f'SET t.created_at = value.created_at '
             f'SET t.updated_at = value.updated_at '
             f'SET t.user_id = value.user_id '
             f'SET t.is_message_thread = value.is_message_thread '
             f'SET t.tags = value.tags '
-            f'SET t.category_id = value.category_id '
             f'WITH t, value '
             f'MATCH (p:platform {{name: "{dataset}"}}) '
             f'CREATE (p)<-[:ON_PLATFORM]-(t) '
             f'WITH t, value '
-            f'MATCH (c:category {{discourse_id: value.category_id, platform: "{dataset}"}}) '
-            f'CREATE (c)<-[:IN_CATEGORY]-(t) '
-            f'WITH t, value '
-            f'MATCH (u:user {{discourse_id: value.user_id, platform: "{dataset}"}}) '
+            f'MATCH (u:user {{id: value.user_id, platform: "{dataset}"}}) '
             f'CREATE (t)<-[:CREATED]-(u) '
             f'WITH t, value '
             f'UNWIND value.tags AS tagids '
-            f'MATCH (tag:tag {{discourse_id: tagids, platform: "{dataset}"}}) '
+            f'MATCH (tag:tag {{id: tagids, platform: "{dataset}"}}) '
             f'CREATE (t)-[:TAGGED_WITH]->(tag) '
         )
 
@@ -1257,7 +1016,7 @@ def graph_create_topics(driver, data):
         tx.run(
             f'CREATE INDEX topic IF NOT EXISTS '
             f'FOR (t:topic) '
-            f'ON (t.discourse_id, t.platform) '
+            f'ON (t.id, t.platform) '
         )
 
     with driver.session() as session:
@@ -1286,7 +1045,7 @@ def graph_create_posts(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_posts_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (p:post {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (p:post {{id: value.id, platform: "{dataset}"}}) '
             f'SET p.user_id = value.user_id '
             f'SET p.topic_id = value.topic_id '
             f'SET p.post_number = value.post_number '
@@ -1308,10 +1067,10 @@ def graph_create_posts(driver, data):
             f'SET p.topic_url = platform.url + "/t/" + p.topic_id '
             f'SET p.post_url = platform.url + "/t/" + p.topic_id + "/" + p.post_number '
             f'WITH p, value '
-            f'MATCH (u:user {{discourse_id: value.user_id, platform: "{dataset}"}}) '
+            f'MATCH (u:user {{id: value.user_id, platform: "{dataset}"}}) '
             f'MERGE (p)<-[:CREATED]-(u) '
             f'WITH p, u, value '
-            f'MATCH (t:topic {{platform: "{dataset}", discourse_id: value.topic_id}}) '
+            f'MATCH (t:topic {{platform: "{dataset}", id: value.topic_id}}) '
             f'SET p.username = u.username '
             f'WITH p, t '
             f'SET p.topic_title = t.title '
@@ -1322,7 +1081,7 @@ def graph_create_posts(driver, data):
         tx.run(
             f'CREATE INDEX post IF NOT EXISTS '
             f'FOR (g:post) '
-            f'ON (g.discourse_id, g.platform) '
+            f'ON (g.id, g.platform) '
         )
 
     with driver.session() as session:
@@ -1355,8 +1114,8 @@ def graph_create_replies(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_replies_{chunk}.json") '
             f'YIELD value '
-            f'MATCH (p1:post {{discourse_id: value.reply_post_id, platform: "{dataset}"}}) '
-            f'MATCH (p2:post {{discourse_id: value.post_id, platform: "{dataset}"}}) '
+            f'MATCH (p1:post {{id: value.reply_post_id, platform: "{dataset}"}}) '
+            f'MATCH (p2:post {{id: value.post_id, platform: "{dataset}"}}) '
             f'CREATE (p2)<-[r:IS_REPLY_TO]-(p1) '
         )
     
@@ -1382,8 +1141,8 @@ def graph_create_quotes(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_quotes_{chunk}.json") '
             f'YIELD value '
-            f'MATCH (p1:post {{discourse_id: value.quoted_post_id, platform: "{dataset}"}}) '
-            f'MATCH (p2:post {{discourse_id: value.post_id, platform: "{dataset}"}}) '
+            f'MATCH (p1:post {{id: value.quoted_post_id, platform: "{dataset}"}}) '
+            f'MATCH (p2:post {{id: value.post_id, platform: "{dataset}"}}) '
             f'CREATE (p1)<-[r:CONTAINS_QUOTE_FROM]-(p2) '
         )
     
@@ -1402,124 +1161,6 @@ def graph_create_quotes(driver, data):
 
     mylogs.info('Added all quote links')
 
-def graph_create_interactions():
-    # Add interactions
-
-    def tx_create_global_user_talks(tx):
-        tx.run(
-            f'MATCH (g1:globaluser)<-[:IS_GLOBAL_USER]-()-[:CREATED]->()-[r:IS_REPLY_TO]-()<-[:CREATED]-()-[:IS_GLOBAL_USER]->(g2:globaluser) '
-            f'WITH g1, g2, count(r) AS c '
-            f'MERGE (g1)-[gr:TALKED_TO]-(g2) '
-            f'SET gr.count = c '
-        )
-
-    def tx_create_user_talks(tx):
-        tx.run(
-            f'MATCH (u1:user)-[:CREATED]->()-[r:IS_REPLY_TO]-()<-[:CREATED]-(u2:user) '
-            f'WITH u1, u2, count(r) AS c '
-            f'MERGE (u1)-[ur:TALKED_TO]-(u2) '
-            f'SET ur.count = c '
-        )
-
-    def tx_create_global_user_quotes(tx):
-        tx.run(
-            f'MATCH (g1:globaluser)<-[:IS_GLOBAL_USER]-()-[:CREATED]->()-[r:CONTAINS_QUOTE_FROM]->()<-[:CREATED]-()-[:IS_GLOBAL_USER]->(g2:globaluser) '
-            f'WITH g1, g2, count(r) AS c '
-            f'MERGE (g1)-[gr:QUOTED]->(g2) '
-            f'SET gr.count = c '
-        )
-
-    def tx_create_user_quotes(tx):
-        tx.run(
-            f'MATCH (u1:user)-[:CREATED]->()-[r:CONTAINS_QUOTE_FROM]->()<-[:CREATED]-(u2:user) '
-            f'WITH u1, u2, count(r) AS c '
-            f'MERGE (u1)-[ur:QUOTED]->(u2) '
-            f'SET ur.count = c '
-        )
-
-    def tx_create_global_user_talks_and_quotes(tx):
-        tx.run(
-            f'MATCH (g1:globaluser)<-[:IS_GLOBAL_USER]-()-[:CREATED]->(p)-[r:IS_REPLY_TO|CONTAINS_QUOTE_FROM]-()<-[:CREATED]-()-[:IS_GLOBAL_USER]->(g2:globaluser) '
-            f'WITH g1, g2, count(DISTINCT p) AS c '
-            f'MERGE (g1)-[gr:TALKED_OR_QUOTED]-(g2) '
-            f'SET gr.count = c '
-        )
-
-    def tx_create_user_talks_and_quotes(tx):
-        tx.run(
-            f'MATCH (u1:user)-[:CREATED]->(p)-[r:IS_REPLY_TO|CONTAINS_QUOTE_FROM]-()<-[:CREATED]-(u2:user) '
-            f'WITH u1, u2, count(DISTINCT p) AS c '
-            f'MERGE (u1)-[ur:TALKED_OR_QUOTED]-(u2) '
-            f'SET ur.count = c '
-        )
-
-    with driver.session() as session:
-        try:
-            session.write_transaction(tx_create_user_talks)
-            mylogs.info('Created user talk graph')
-        except Exception as e:
-            mylogs.error('Creating user talk graph failed.')
-            mylogs.error(e)
-        try:
-            session.write_transaction(tx_create_global_user_talks)
-            mylogs.info('Created global user talk graph')
-        except Exception as e:
-            mylogs.error('Creating global user talk graph failed.')
-            mylogs.error(e)
-        try:
-            session.write_transaction(tx_create_user_quotes)
-            mylogs.info('Created user quote graph')
-        except Exception as e:
-            mylogs.error('Creating user quote graph failed.')
-            mylogs.error(e)
-        try:
-            session.write_transaction(tx_create_global_user_quotes)
-            mylogs.info('Created global user quote graph')
-        except Exception as e:
-            mylogs.error('Creating global user quote graph failed.')
-            mylogs.error(e)
-        try:
-            session.write_transaction(tx_create_user_talks_and_quotes)
-            mylogs.info('Created user talk and quote graph')
-        except Exception as e:
-            mylogs.error('Creating user talk and quote graph failed.')
-            mylogs.error(e)
-        try:
-            session.write_transaction(tx_create_global_user_talks_and_quotes)
-            mylogs.info('Created global user talk and quote graph')
-        except Exception as e:
-            mylogs.error('Creating global user talk and quote graph failed.')
-            mylogs.error(e)
-
-    mylogs.info('Added all user to user interaction links')
-
-def graph_create_likes(driver, data):
-    # Add likes
-
-    def tx_create_likes(tx, chunk, dataset):
-        tx.run(
-            f'CALL apoc.load.json("file://{data_path}/{dataset}_likes_{chunk}.json") '
-            f'YIELD value '
-            f'MATCH (p:post {{discourse_id: value.post_id, platform: "{dataset}"}}) '
-            f'MATCH (u:user {{discourse_id: value.user_id, platform: "{dataset}"}}) '
-            f'CREATE (p)<-[r:LIKES]-(u) '
-        )
-
-    for platform in data.values():
-        with driver.session() as session:
-            platform_name = platform['site']['name']
-            topic = 'likes'
-            chunks = platform['stats']['chunk_sizes'][topic]
-            for chunk in range(1, chunks + 1):
-                try:
-                    session.write_transaction(tx_create_likes, chunk, platform_name)
-                    mylogs.debug(f'Loaded likes data from {platform_name}, chunk #{chunk}')
-                except Exception as e:
-                    mylogs.error(f'Import likes for reply on {platform_name}, chunk #{chunk}')
-                    mylogs.error(e)
-
-    mylogs.info('Added all like links')
-
 def graph_create_languages(driver, data):
     # Add annotation languages
 
@@ -1527,7 +1168,7 @@ def graph_create_languages(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_languages_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (lang:language {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (lang:language {{id: value.id, platform: "{dataset}"}}) '
             f'SET lang.name = value.name '
             f'SET lang.locale = value.locale '
             f'WITH lang, value '
@@ -1540,7 +1181,7 @@ def graph_create_languages(driver, data):
         tx.run(
             f'CREATE INDEX languages IF NOT EXISTS '
             f'FOR (lang:language) '
-            f'ON (lang.discourse_id, lang.platform) '
+            f'ON (lang.id, lang.platform) '
         )
 
     with driver.session() as session:
@@ -1567,7 +1208,7 @@ def graph_create_codes(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_codes_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (code:code {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (code:code {{id: value.id, platform: "{dataset}"}}) '
             f'SET code.name = value.name '
             f'SET code.description = value.description '
             f'SET code.creator_id = value.creator_id '
@@ -1580,7 +1221,7 @@ def graph_create_codes(driver, data):
             f'WITH code, p, value '
             f'CREATE (p)<-[:ON_PLATFORM]-(code) '
             f'WITH code, value '
-            f'MATCH (u:user {{discourse_id: value.creator_id, platform: "{dataset}"}}) '
+            f'MATCH (u:user {{id: value.creator_id, platform: "{dataset}"}}) '
             f'CREATE (u)-[:CREATED]->(code)'
         )
 
@@ -1588,7 +1229,7 @@ def graph_create_codes(driver, data):
         tx.run(
             f'CREATE INDEX codes IF NOT EXISTS '
             f'FOR (code:code) '
-            f'ON (code.discourse_id, code.platform) '
+            f'ON (code.id, code.platform) '
         )
 
     with driver.session() as session:
@@ -1615,7 +1256,7 @@ def graph_create_code_ancestry(driver, data):
         tx.run(
             f'MATCH (c:code) WHERE c.ancestry CONTAINS "/" '
             f'WITH toInteger(split(c.ancestry,"/")[-1]) AS cid, c AS child '
-            f'MERGE (parent:code {{discourse_id: cid, platform: child.platform}}) '
+            f'MERGE (parent:code {{id: cid, platform: child.platform}}) '
             f'MERGE (parent)<-[:HAS_PARENT_CODE]-(child) '
         )
 
@@ -1636,15 +1277,15 @@ def graph_create_code_names(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_code_names_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (codename:codename {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (codename:codename {{id: value.id, platform: "{dataset}"}}) '
             f'SET codename.name = value.name '
             f'SET codename.name_normalized = value.name_normalized '
             f'SET codename.code_id = value.tag_id '
             f'SET codename.language_id = value.language_id '
             f'SET codename.created_at = value.created_at '
             f'WITH codename, value '
-            f'MATCH (language:language {{discourse_id: value.language_id, platform: "{dataset}"}}) '
-            f'MATCH (code:code {{discourse_id: value.tag_id, platform: "{dataset}"}}) '
+            f'MATCH (language:language {{id: value.language_id, platform: "{dataset}"}}) '
+            f'MATCH (code:code {{id: value.tag_id, platform: "{dataset}"}}) '
             f'WITH codename, language, code '
             f'CREATE (codename)<-[:HAS_CODENAME]-(code) '
             f'CREATE (codename)-[:IN_LANGUAGE]->(language) '
@@ -1678,7 +1319,7 @@ def graph_create_annotations(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_annotations_{chunk}.json") '
             f'YIELD value '
-            f'CREATE (annotation:annotation {{discourse_id: value.id, platform: "{dataset}"}}) '
+            f'CREATE (annotation:annotation {{id: value.id, platform: "{dataset}"}}) '
             f'SET annotation.text = value.text '
             f'SET annotation.quote = value.quote '
             f'SET annotation.created_at = value.created_at '
@@ -1694,9 +1335,9 @@ def graph_create_annotations(driver, data):
             f'SET annotation.end_offset = value.end_offset '
             f'SET annotation.overlaps = value.overlaps '
             f'WITH annotation, value '
-            f'MATCH (code:code {{discourse_id: value.tag_id, platform: "{dataset}"}}) '
-            f'MATCH (post:post {{discourse_id: value.post_id, platform: "{dataset}"}}) '
-            f'MATCH (user:user {{discourse_id: value.creator_id, platform: "{dataset}"}}) '
+            f'MATCH (code:code {{id: value.tag_id, platform: "{dataset}"}}) '
+            f'MATCH (post:post {{id: value.post_id, platform: "{dataset}"}}) '
+            f'MATCH (user:user {{id: value.creator_id, platform: "{dataset}"}}) '
             f'WITH code, post, user, annotation '
             f'CREATE (code)<-[:REFERS_TO]-(annotation) '
             f'CREATE (post)<-[:ANNOTATES]-(annotation) '
@@ -1708,8 +1349,8 @@ def graph_create_annotations(driver, data):
         tx.run(
             f'CALL apoc.load.json("file://{data_path}/{dataset}_annotations_{chunk}.json") '
             f'YIELD value '
-            f'MATCH (annotation:annotation {{discourse_id: value.id}}) '
-            f'MATCH (overlap:annotation) WHERE overlap.discourse_id in annotation.overlaps '
+            f'MATCH (annotation:annotation {{id: value.id}}) '
+            f'MATCH (overlap:annotation) WHERE overlap.id in annotation.overlaps '
             f'CREATE (overlap)-[:OVERLAPS]->(annotation) '
         )
 
@@ -1830,9 +1471,6 @@ def graph_create_code_use(driver):
             mylogs.error('Creating code use graph failed.')
             mylogs.error(e)
 
-# TODO
-# Add post permissions with HAS_ACCESS to groups to enable granular graph access
-
 def main():
     databases = config['databases']
 
@@ -1855,16 +1493,12 @@ def main():
     # Calls to update graph 
     graph_clear(driver)
     graph_create_platform(driver, data)
-    graph_create_groups(driver, data)
     graph_create_users(driver, data)
     graph_create_tags(driver, data)
-    graph_create_categories(driver, data)
     graph_create_topics(driver, data)
     graph_create_posts(driver, data)
     graph_create_replies(driver, data)
     graph_create_quotes(driver, data)
-    graph_create_interactions()
-    graph_create_likes(driver, data)
     graph_create_languages(driver, data)
     graph_create_codes(driver, data)
     graph_create_code_ancestry(driver, data)
