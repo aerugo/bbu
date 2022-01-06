@@ -48,7 +48,7 @@ function Code () {
             </p>
             {
                 data?.annotations?.map(annotation => (
-                    <Link style={{ textDecoration: "none" }}to={`/fragment/${annotation.discourse_id}`} key={annotation.discourse_id}>
+                    <Link style={{ textDecoration: "none" }}to={`/fragment/${annotation.id}`} key={annotation.id}>
                         <span key={annotation.discource_id}>
                             <ReactMarkdown>
                                 { "➢  " + annotation.quote }

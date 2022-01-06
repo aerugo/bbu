@@ -51,8 +51,8 @@ function CodeBook () {
             {
                 filteredData.map(code => (
                     <CodePreview 
-                        key={code.discourse_id}
-                        id={code.discourse_id}
+                        key={code.id}
+                        id={code.id}
                         name={code.name}
                         annotationsCount={code.annotations_count}
                         description={code.description}

@@ -61,11 +61,11 @@ function Fragment () {
                     </td>
                     <td>
                         <Link to={
-                            "/post/" + data?.annotates[0]?.in_topic[0].discourse_id + "#"
-                            + data?.annotates[0]?.discourse_id
+                            "/post/" + data?.annotates[0]?.in_topic[0].id + "#"
+                            + data?.annotates[0]?.id
                         }>
                         {data?.annotates[0]?.in_topic.map(item => (
-                            <span key={item.discourse_id}>{item.title}</span>
+                            <span key={item.id}>{item.title}</span>
                         ))}
                         </Link>
                     </td>
@@ -82,7 +82,7 @@ function Fragment () {
                 </tr>
                 {
                     data?.refers_to?.map(item => (
-                        <tr key={item.discourse_id}>
+                        <tr key={item.id}>
                             <td>
                                 <span className="circle-count">{item.annotations_count}</span>
                             </td>
@@ -91,14 +91,14 @@ function Fragment () {
                                     {item.cooccurring_codes.length}
                                 </span>
                             </td>
-                            <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
+                            <td><Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link></td>
                         </tr>
                     ))
                 }
                 {
                     data?.overlaps?.map(overlap => {
                         return overlap?.refers_to?.map(item => (
-                            <tr key={item.discourse_id}>
+                            <tr key={item.id}>
                                 <td>
                                     <span className="circle-count">{item.annotations_count}</span>
                                 </td>
@@ -107,7 +107,7 @@ function Fragment () {
                                         {item.cooccurring_codes.length}
                                     </span>
                                 </td>
-                                <td><Link to={`/codes/${item.discourse_id}`}>{item.name.toLowerCase()}</Link></td>
+                                <td><Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link></td>
                             </tr>
                         ))
                     })
