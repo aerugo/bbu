@@ -4,7 +4,7 @@ import responseCachePlugin from "apollo-server-plugin-response-cache";
 import { assertSchema, makeAugmentedSchema } from "neo4j-graphql-js";
 import * as neo4j from "neo4j-driver";
 import { config } from "../config";
-import { resolvers, typeDefs, gqlConfig } from "./schema";
+import { typeDefs, gqlConfig } from "./schema";
 import { getLogger } from "../logger";
 
 // logger
@@ -23,7 +23,6 @@ export async function register(app: Express): Promise<void> {
   // create the Neo4j graphql schema
   const schema = makeAugmentedSchema({
     typeDefs,
-    resolvers,
     config: gqlConfig,
   });
 

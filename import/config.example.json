@@ -4,21 +4,7 @@
     "neo4j_uri": "bolt://localhost:7687",
     "neo4j_user": "neo4j",
     "neo4j_password": "YOURPASSWORD",
-    "databases": [
-        {
-            "name": "discourse_1",
-            "ensure_consent": "false",
-            "protected_topic_policy": "redact",
-            "pseudonymize_users": "false",
-            "database_root": "",
-            "omit_codes_prefix": [],
-            "host": "your.discourse.server",
-            "port": "5432",
-            "dbname": "discourse_production_database_1",
-            "user": "sqluser",
-            "password": "sqlpassword"
-        },
-        {
+    "databases": [{
             "name": "discourse_2",
             "ensure_consent": "false",
             "protected_topic_policy": "omit",
@@ -28,19 +14,6 @@
             "host": "your.discourse.server",
             "port": "5432",
             "dbname": "discourse_production_database_1",
-            "user": "sqluser",
-            "password": "sqlpassword"
-        },
-        {
-            "name": "discourse_3",
-            "ensure_consent": "true",
-            "protected_topic_policy": "redact",
-            "pseudonymize_users": "true",
-            "database_root": "",
-            "omit_codes_prefix": [],
-            "host": "your.discourse.server",
-            "port": "5432",
-            "dbname": "discourse_database_1",
             "user": "sqluser",
             "password": "sqlpassword"
         }]
