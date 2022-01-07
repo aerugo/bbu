@@ -33,6 +33,48 @@ export function fillBlanks (arr, max) {
     return full;
 }
 
+function removeNewLine (str) {
+    const indexes = [];
+    while (str.indexOf("\n") > -1) {
+        const index = str.indexOf("\n");
+        indexes.push(index + (0 && (indexes.length * 2)))
+        str = str.slice(0, index) + str.slice(index + 1);
+    }
+    return { str, indexes };
+}
+
+function countOccurence (arr, num) {
+    let count = 0;
+    arr.forEach(a => a === num && count++);
+    return count;
+}
+
+function addNewLine (string, indexes) {
+    let str = "";
+    const length = string.length;
+    
+    for (let i = 0; i < length; i++) {
+        const count = countOccurence(indexes, i)
+        if (count > 0) {
+            str += "\n".repeat(count);
+        }
+        str += string[i];
+    }
+    
+    return str;
+}
+
+function addHighlights (parts) {
+    let string = "";
+    parts.forEach(part => {
+        if (part.isFragment)
+            string += "<" + part.text + ">";
+        else
+            string += part.text;
+    });
+    return string;
+}
+
 export function getParts (post, fragments) {
     const parts = [];
     let indexes = getPartsIndexes(post, fragments);
@@ -50,3 +92,4 @@ export function getParts (post, fragments) {
     });
     return parts;
 }
+
