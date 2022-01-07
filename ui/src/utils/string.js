@@ -93,3 +93,23 @@ export function getParts (post, fragments) {
     return parts;
 }
 
+function incArray (array, min) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] >= min) {
+            array[i]++;
+        }
+    }
+}
+
+export function search (post, fragments) {   
+    console.log(post)
+    const { str, indexes } = removeNewLine(post);
+    const parts = getParts(str, fragments);
+    const highlightedString = addHighlights(parts);
+    
+    parts.forEach(part => {
+        incArray(indexes, part.startIndex);
+    });
+    
+    return addNewLine(highlightedString, indexes);
+}
