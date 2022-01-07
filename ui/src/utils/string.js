@@ -68,11 +68,19 @@ function addHighlights (parts) {
     let string = "";
     parts.forEach(part => {
         if (part.isFragment)
-            string += "<" + part.text + ">";
+            string += "<<<<" + part.text + ">>>>";
         else
             string += part.text;
     });
     return string;
+}
+
+function incArray (array, min, inc) {
+    for (let i = 0; i < array.length; i++) {
+        if (array[i] > min) {
+            array[i] += inc;
+        }
+    }
 }
 
 export function getParts (post, fragments) {
@@ -93,23 +101,19 @@ export function getParts (post, fragments) {
     return parts;
 }
 
-function incArray (array, min) {
-    for (let i = 0; i < array.length; i++) {
-        if (array[i] >= min) {
-            array[i]++;
-        }
-    }
-}
-
 export function search (post, fragments) {   
-    console.log(post)
     const { str, indexes } = removeNewLine(post);
     const parts = getParts(str, fragments);
     const highlightedString = addHighlights(parts);
-    
+    let fc = 0;
     parts.forEach(part => {
-        incArray(indexes, part.startIndex);
+        const startStrLen = 4;
+        const endStrLen = 4;
+        if (part.isFragment) {
+            incArray(indexes, part.startIndex + (fc * (startStrLen + endStrLen)));
+            incArray(indexes, part.endIndex + (fc * (startStrLen + endStrLen)));
+            fc++;
+        }
     });
-    
     return addNewLine(highlightedString, indexes);
 }
