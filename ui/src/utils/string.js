@@ -1,4 +1,6 @@
-export function getPartsIndexes (post, parts) {
+import arraySort from "array-sort";
+
+function getPartsIndexes (post, parts) {
     
     const partsIndexes = [];
     parts.forEach(part => {
@@ -10,7 +12,7 @@ export function getPartsIndexes (post, parts) {
     return partsIndexes;
 }
 
-export function fillBlanks (arr, max) {
+function fillBlanks (arr, max) {
     const full = [];
     
     if (arr.length === 0) {
@@ -32,7 +34,24 @@ export function fillBlanks (arr, max) {
     
     return full;
 }
-
+function getParts (post, fragments) {
+    const parts = [];
+    let indexes = getPartsIndexes(post, fragments);
+    arraySort(indexes, "start");
+    indexes = fillBlanks(indexes, post.length);
+    let cursor = 0;
+    indexes.forEach(index => {
+        const startIndex = index.start > cursor ? index.start : cursor;
+        parts.push({
+            text: post.substr(startIndex, index.end - startIndex),
+            isFragment: index.isFragment,
+            startIndex,
+            endIndex: index.end
+        });
+        cursor = index.end;
+    });
+    return parts;
+}
 function removeNewLine (str) {
     const indexes = [];
     while (str.indexOf("\n") > -1) {
@@ -45,7 +64,7 @@ function removeNewLine (str) {
 
 function countOccurence (arr, num) {
     let count = 0;
-    arr.forEach(a => a === num && count++);
+    arr.forEach(a => a === num ? count++ : "");
     return count;
 }
 
@@ -63,18 +82,16 @@ function addNewLine (string, indexes) {
     
     return str;
 }
-
 function addHighlights (parts) {
     let string = "";
     parts.forEach(part => {
         if (part.isFragment)
-            string += "<<<<" + part.text + ">>>>";
+            string += "<span class='frag-sep'>" + part.text + "</span>";
         else
             string += part.text;
     });
     return string;
 }
-
 function incArray (array, min, inc) {
     for (let i = 0; i < array.length; i++) {
         if (array[i] > min) {
@@ -83,35 +100,18 @@ function incArray (array, min, inc) {
     }
 }
 
-export function getParts (post, fragments) {
-    const parts = [];
-    let indexes = getPartsIndexes(post, fragments);
-    arraySort(indexes, "start");
-    indexes = fillBlanks(indexes, post.length);
-    let cursor = 0;
-    console.log(indexes)
-    indexes.forEach(index => {
-        const startIndex = index.start > cursor ? index.start : cursor;
-        parts.push({
-            text: post.substr(startIndex, index.end - startIndex),
-            isFragment: index.isFragment
-        });
-        cursor = index.end;
-    });
-    return parts;
-}
-
 export function search (post, fragments) {   
     const { str, indexes } = removeNewLine(post);
+    console.log(indexes);
     const parts = getParts(str, fragments);
     const highlightedString = addHighlights(parts);
     let fc = 0;
     parts.forEach(part => {
-        const startStrLen = 4;
-        const endStrLen = 4;
+        const startStrLen = 23;
+        const endStrLen = 7;
         if (part.isFragment) {
-            incArray(indexes, part.startIndex + (fc * (startStrLen + endStrLen)));
-            incArray(indexes, part.endIndex + (fc * (startStrLen + endStrLen)));
+            incArray(indexes, part.startIndex + (fc * (startStrLen + endStrLen)), 23);
+            incArray(indexes, part.endIndex + (fc * (startStrLen + endStrLen)), 7);
             fc++;
         }
     });
