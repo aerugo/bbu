@@ -1,5 +1,12 @@
 import arraySort from "array-sort";
 
+function replaceAfter(target, search, replace, from) {
+    if (target.length > from) {
+      return target.slice(0, from) + target.slice(from).replace(search, replace);
+    }
+    return target;
+}
+
 function getPartsIndexes (post, parts) {
     
     const partsIndexes = [];
@@ -161,7 +168,7 @@ export function search (post, fragments) {
     return addNewLine(highlightedString, indexes);
 }
 
-export function validateHtml (target) {
+export function validateHtml2 (target) {
     const r1 = "<span class='frag-sep'><p>";
     const s1 = "<p><span class='frag-sep'>";
 
@@ -170,6 +177,38 @@ export function validateHtml (target) {
     
     let v = target.replace(new RegExp(s1, 'g'), r1);
     v = v.replace(new RegExp(s2, 'g'), r2);
+
+    return v;
+}
+
+export function validateHtml (target) {
+    const r1 = `<span class="frag-sep"><p>`;
+    const r11 = `<p><span class="frag-sep">`;
+    const s1 = "<p><span class='frag-sep'>";
+
+    const r2 = "</span></p>";
+    const s2 = "</p></span>";
+    const s3 = "</span>";
+    const s4 = "</p>";
+
+    let v = target;
+    let index = target.indexOf(s1);
+    
+    while (index > -1) {
+
+        const s3Index = target.indexOf(s3, index);
+        const s4Index = target.indexOf(s4, index);
+
+        if (s3Index < s4Index) {
+            v = v.replace(s1, r11);
+        }
+        else {
+            v = v.replace(s1, r1);
+            v = replaceAfter(v, s2, r2, index);
+        }
+
+        index = v.indexOf(s1);
+    }
 
     return v;
 }
