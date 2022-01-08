@@ -17,6 +17,7 @@ function Thread () {
         variables: { id: parseInt(params.id) }
     });
     const [data, setData] = React.useState(null);
+    const [initialAnnotation, setInitialAnnotation] = React.useState(null);
 
     React.useEffect(() => {
 
@@ -29,7 +30,9 @@ function Thread () {
 
     React.useEffect(() => {
         if (window.location.hash && data) {
-            const id = "p" + window.location.hash.substr(1, window.location.hash.length)
+            const hash = window.location.hash.substr(1, window.location.hash.length)?.split("-");
+            const id = "p" + hash[0];
+            setInitialAnnotation(hash);
             document.getElementById(id)?.scrollIntoView();
             window.scrollBy(0, -60);
         }
@@ -69,6 +72,7 @@ function Thread () {
                             post={post} 
                             key={index}
                             converter={converter}
+                            initialAnnotation={initialAnnotation && initialAnnotation[0] == post.id ? decodeURI(initialAnnotation[1]) : null}
                         />
                     ))
                 }

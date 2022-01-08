@@ -6,12 +6,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactHtmlParser from "react-html-parser";
 import { search, validateHtml } from "../../utils/string";
 
-function ThreadPost({ post, converter }) {
+function ThreadPost({ post, converter, initialAnnotation }) {
 
 	const [searched, setSearched] = React.useState([]);
-	const [fragments, setFragments] = React.useState([]);
+	const [fragments, setFragments] = React.useState(initialAnnotation ? [initialAnnotation] : ["An act that would piss off Afreet."]);
+	const [isFirstTime, setIsFirstTime] = React.useState(true);
 
 	React.useEffect(() => {
+
+		if (isFirstTime) {
+			return setIsFirstTime(false);
+		}
 
 		const fragments = post?.annotations?.map(item => (
 			item?.refers_to?.map(code => searched.indexOf(code.id) > -1 ? code.annotations : [])
@@ -19,8 +24,6 @@ function ThreadPost({ post, converter }) {
 		.flat()
 		.flat()
 		.map(fragment => fragment.quote);
-
-		console.log("Fragment", fragments);
 
 		setFragments(fragments);
 
