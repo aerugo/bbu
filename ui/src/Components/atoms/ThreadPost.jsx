@@ -9,13 +9,15 @@ import { search, validateHtml } from "../../utils/string";
 function ThreadPost({ post, converter, initialAnnotation }) {
 
 	const [searched, setSearched] = React.useState([]);
-	const [fragments, setFragments] = React.useState(initialAnnotation ? [initialAnnotation] : ["An act that would piss off Afreet."]);
+	const [fragments, setFragments] = React.useState(initialAnnotation ? [initialAnnotation] : []);
 	const [isFirstTime, setIsFirstTime] = React.useState(true);
 
 	React.useEffect(() => {
 
 		if (isFirstTime) {
-			return setIsFirstTime(false);
+			if (initialAnnotation)
+				setFragments([initialAnnotation]);
+			return;
 		}
 
 		const fragments = post?.annotations?.map(item => (
@@ -27,7 +29,7 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 
 		setFragments(fragments);
 
-	}, [searched]);
+	}, [searched, initialAnnotation]);
 
 	return (
 		<div id={`p${post.id}`}>
@@ -70,6 +72,7 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 											else
 												searched.push(item.id);
 											setSearched([...searched]);
+											setIsFirstTime(false);
 										}}
 									>
 										{

@@ -62,7 +62,8 @@ function Fragment () {
                     <td>
                         <Link to={
                             "/post/" + data?.annotates[0]?.in_topic[0].id + "#"
-                            + data?.annotates[0]?.id
+                            + data?.annotates[0]?.id + "-"
+                            + data?.quote
                         }>
                         {data?.annotates[0]?.in_topic.map(item => (
                             <span key={item.id}>{item.title}</span>
