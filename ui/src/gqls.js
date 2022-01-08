@@ -110,6 +110,11 @@ query Topic($id: Int!) {
             annotations_count
             name
             id
+            annotations {
+              id
+              quote
+              post_id
+            }
           }
         }
       }

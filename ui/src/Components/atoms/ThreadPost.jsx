@@ -1,12 +1,31 @@
 import React from "react";
 import CollapseAbleTable from "./CollapseableTable";
 import { Link } from "react-router-dom";
-import { faEye} from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactHtmlParser from "react-html-parser";
-import { search } from "../../utils/string";
+import { search, validateHtml } from "../../utils/string";
 
 function ThreadPost({ post, converter }) {
+
+	const [searched, setSearched] = React.useState([]);
+	const [fragments, setFragments] = React.useState([]);
+
+	React.useEffect(() => {
+
+		const fragments = post?.annotations?.map(item => (
+			item?.refers_to?.map(code => searched.indexOf(code.id) > -1 ? code.annotations : [])
+		))
+		.flat()
+		.flat()
+		.map(fragment => fragment.quote);
+
+		console.log("Fragment", fragments);
+
+		setFragments(fragments);
+
+	}, [searched]);
+
 	return (
 		<div id={`p${post.id}`}>
 			<p
@@ -16,9 +35,9 @@ function ThreadPost({ post, converter }) {
 					margin: "20px 0px",
 				}}
 			>
-				{ReactHtmlParser(converter.makeHtml(
-					search(post.raw, [`"Because you made a mistake," said Hakawati, all sense of reserve leaving his eyes. He is incensed.`])
-				))}
+				{ReactHtmlParser(validateHtml(converter.makeHtml(
+					search(post.raw, fragments)
+				)))}
 			</p>
 			<br />
 			{post?.annotations?.length > 0 && (
@@ -41,7 +60,21 @@ function ThreadPost({ post, converter }) {
 									</span>
 								</td>
 								<td>
-									<FontAwesomeIcon icon={faEye} />
+									<span
+										onClick={() => {
+											if (searched.indexOf(item.id) > -1)
+												searched.splice(searched.indexOf(item.id), 1);
+											else
+												searched.push(item.id);
+											setSearched([...searched]);
+										}}
+									>
+										{
+											(searched.indexOf(item.id) > -1) ?
+											<FontAwesomeIcon icon={faEyeSlash} /> :
+											<FontAwesomeIcon icon={faEye} />
+										}
+									</span>
 								</td>
 								<td>
 									<Link to={`/codes/${item.id}`}>

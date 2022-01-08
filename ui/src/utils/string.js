@@ -6,6 +6,7 @@ function getPartsIndexes (post, parts) {
     parts.forEach(part => {
         const index = post.indexOf(part);
         if (index > -1) {
+            console.log("Matched", part);
             partsIndexes.push({ start:  index, end: index + part.length});
         }
     });
@@ -34,10 +35,12 @@ function fillBlanks (arr, max) {
     
     return full;
 }
+
 function getParts (post, fragments) {
     const parts = [];
     let indexes = getPartsIndexes(post, fragments);
     arraySort(indexes, "start");
+    indexes = removeOverlaps(indexes);
     indexes = fillBlanks(indexes, post.length);
     let cursor = 0;
     indexes.forEach(index => {
@@ -52,6 +55,7 @@ function getParts (post, fragments) {
     });
     return parts;
 }
+
 function removeNewLine (str) {
     const indexes = [];
     while (str.indexOf("\n") > -1) {
@@ -100,9 +104,48 @@ function incArray (array, min, inc) {
     }
 }
 
-export function search (post, fragments) {   
+function removeOverlaps (arr) {
+    for (let i = 0; i < arr.length-1; i++) {
+        for (let j = i+1; j < arr.length; j++) {
+            const { start:b1, end:e1 } = arr[i];
+            const { start:b2, end:e2 } = arr[j];
+            const hasOverlap = (
+                (b1 === b2 && e1 === e2)
+               || (b1 <= b2 && b2 <= e1)
+               || (b1 <= e2 && e2 <= e1)
+               || (b2 <= b1 && b1 <= e2)
+               //|| (b2 <= e2 && e2 <= e2)
+            )
+            
+            if (!hasOverlap || arr[i].remove) {
+                continue
+            }
+            
+            let oc = 0;
+            if (
+                arr[i].start >= arr[j].start
+            ) {
+                arr[i].start = arr[j].start
+                arr[j].remove = true;
+                oc++;
+            }
+            if (arr[i].end <= arr[j].end) {
+                arr[i].end = arr[j].end
+                arr[j].remove = true;
+                oc++
+            }
+            if (oc === 0)
+                arr[j].remove = true
+        }
+    }
+    return arr.filter((el, index) => {
+        return !el.remove
+    })
+}
+
+export function search (post, fragments) {
+    console.log('MATCHES');  
     const { str, indexes } = removeNewLine(post);
-    console.log(indexes);
     const parts = getParts(str, fragments);
     const highlightedString = addHighlights(parts);
     let fc = 0;
@@ -116,4 +159,17 @@ export function search (post, fragments) {
         }
     });
     return addNewLine(highlightedString, indexes);
+}
+
+export function validateHtml (target) {
+    const r1 = "<span class='frag-sep'><p>";
+    const s1 = "<p><span class='frag-sep'>";
+
+    const r2 = "</span></p>";
+    const s2 = "</p></span>";
+    
+    let v = target.replace(new RegExp(s1, 'g'), r1);
+    v = v.replace(new RegExp(s2, 'g'), r2);
+
+    return v;
 }
