@@ -13,7 +13,6 @@ function getPartsIndexes (post, parts) {
     parts.forEach(part => {
         const index = post.indexOf(part);
         if (index > -1) {
-            console.log("Matched", part);
             partsIndexes.push({ start:  index, end: index + part.length});
         }
     });
@@ -151,7 +150,6 @@ function removeOverlaps (arr) {
 }
 
 export function search (post, fragments) {
-    console.log('MATCHES');  
     const { str, indexes } = removeNewLine(post);
     const parts = getParts(str, fragments);
     const highlightedString = addHighlights(parts);

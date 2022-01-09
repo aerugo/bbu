@@ -83,7 +83,7 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 										{item.annotations_count}
 									</span>
 								</td>
-								<td>
+								<td className="unselectable">
 									<span
 										onClick={() => {
 											if (searched.indexOf(item.id) > -1)
@@ -101,7 +101,7 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 										}
 									</span>
 								</td>
-								<td>
+								<td className="unselectable">
 									<Link to={`/codes/${item.id}`}>
 										{item.name.toLowerCase()}
 									</Link>
