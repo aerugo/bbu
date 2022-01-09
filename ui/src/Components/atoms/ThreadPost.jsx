@@ -39,7 +39,12 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 		)));
 		setPostContent(content);
 		if (content.indexOf("frag-sep") > -1) {
-			setPostClass("faded");
+			if (isFirstTime) {
+				setPostClass("faded faded-with-animation");
+			}
+			else {
+				setPostClass("faded");
+			}
 		}
 		else {
 			setPostClass("");
