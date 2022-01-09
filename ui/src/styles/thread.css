@@ -3,5 +3,9 @@ p {
 }
 
 .frag-sep {
-    color: blue;
+    color: blue !important;
+}
+
+.faded {
+    color: #000000aa;
 }

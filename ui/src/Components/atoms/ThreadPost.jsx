@@ -11,6 +11,8 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 	const [searched, setSearched] = React.useState([]);
 	const [fragments, setFragments] = React.useState(initialAnnotation ? [initialAnnotation] : []);
 	const [isFirstTime, setIsFirstTime] = React.useState(true);
+	const [postContent, setPostContent] = React.useState("");
+	const [postClass, setPostClass] = React.useState("");
 
 	React.useEffect(() => {
 
@@ -31,6 +33,19 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 
 	}, [searched, initialAnnotation]);
 
+	React.useEffect(() => {
+		const content = (validateHtml(converter.makeHtml(
+			search(post.raw, fragments)
+		)));
+		setPostContent(content);
+		if (content.indexOf("frag-sep") > -1) {
+			setPostClass("faded");
+		}
+		else {
+			setPostClass("");
+		}
+	}, [fragments, post.raw]);
+
 	return (
 		<div id={`p${post.id}`}>
 			<p
@@ -39,10 +54,9 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 					paddingBottom: 10,
 					margin: "20px 0px",
 				}}
+				className={postClass}
 			>
-				{ReactHtmlParser(validateHtml(converter.makeHtml(
-					search(post.raw, fragments)
-				)))}
+				{ReactHtmlParser(postContent)}
 			</p>
 			<br />
 			{post?.annotations?.length > 0 && (
