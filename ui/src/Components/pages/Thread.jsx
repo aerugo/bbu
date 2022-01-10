@@ -28,14 +28,22 @@ function Thread () {
 
     }, [response, loading]);
 
-    React.useEffect(() => {
+    const onResize = () => {
         if (window.location.hash && data) {
             const hash = window.location.hash.substr(1, window.location.hash.length)?.split("-");
             const id = "p" + hash[0];
             setInitialAnnotation(hash);
             document.getElementById(id)?.scrollIntoView();
             window.scrollBy(0, -60);
+            setTimeout(() => {
+                document.getElementById(id)?.scrollIntoView();
+                window.scrollBy(0, -60);
+            }, 500);
         }
+    }
+
+    React.useEffect(() => {
+        onResize();
     }, [data]);
     
     if (loading) {

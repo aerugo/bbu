@@ -13,6 +13,7 @@ p {
 .faded-with-animation {
     animation: fade 1.8s;
     animation-fill-mode: forwards;
+    animation-delay: 0.2s;
 }
 
 @keyframes fade {
