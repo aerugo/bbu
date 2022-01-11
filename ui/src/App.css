@@ -38,3 +38,10 @@ img {
   max-height: 30em;
   margin: 1em;
 }
+
+.unselectable {
+  -webkit-user-select: none;     
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

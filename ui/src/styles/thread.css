@@ -1,3 +1,23 @@
 p {
     margin-bottom: 0px;
 }
+
+.frag-sep {
+    color: #000 !important;
+}
+
+.faded {
+    color: #00000066;
+}
+
+.faded-with-animation {
+    animation: fade 1.8s;
+    animation-fill-mode: forwards;
+    animation-delay: 0.2s;
+}
+
+@keyframes fade {
+    0% { color: #000 }
+    50% {color: #00000033}
+    100% {color: #00000066}
+}
