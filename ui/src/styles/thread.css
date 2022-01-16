@@ -17,6 +17,6 @@ p {
 
 @keyframes fade {
     0% {color: #ffffff}
-    50% {color: #00000066}
+    75% {color: #00000066}
     100% {color: #000}
 }

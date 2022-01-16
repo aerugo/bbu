@@ -1,6 +1,7 @@
 .app-container {
   padding: 15px;
   font-family: 'Baskervville', serif;
+  font-size: 1.2em;
   box-sizing: border-box;
   width: 100%;
   line-height: 1.5;

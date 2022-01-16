@@ -20,7 +20,7 @@ function CollapseAbleTable ({
                     width: "200px"
                 }}
             >
-                <span>
+                <span style={{ fontWeight: "400" }}>
                     {isCollapsed ? <span>〉</span> : <span>﹀</span>}
                 </span>
             </div>
