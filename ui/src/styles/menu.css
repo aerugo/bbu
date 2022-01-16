@@ -11,6 +11,13 @@
     box-sizing: border-box;
 }
 
+@media screen and (min-width: 769px) {
+    .menu-container {
+      width: 60%;
+      margin-left: 20%;
+    }
+  }
+
 .menu-container>*:first-child {
     display: flex;
     justify-content: flex-end;

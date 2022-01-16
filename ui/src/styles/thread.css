@@ -11,13 +11,12 @@ p {
 }
 
 .faded-with-animation {
-    animation: fade 1.8s;
+    animation: fade 5s;
     animation-fill-mode: forwards;
-    animation-delay: 0.2s;
 }
 
 @keyframes fade {
-    0% { color: #000 }
-    50% {color: #00000033}
-    100% {color: #00000066}
+    0% {color: #ffffff}
+    50% {color: #00000066}
+    100% {color: #000}
 }

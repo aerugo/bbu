@@ -1,8 +1,6 @@
 import React from "react";
 import {Helmet} from "react-helmet";
 import AppHeader from "../atoms/AppHeader";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPenFancy, faProjectDiagram, faShare } from "@fortawesome/free-solid-svg-icons";
 import { useQuery } from "@apollo/client";
 import Loading from "../atoms/Loading";
 import { ANNOTATION } from "../../gqls";
@@ -16,7 +14,7 @@ function Fragment () {
     const { id } = useParams();
 
     const {data:response, loading} = useQuery(ANNOTATION, {
-        variables: { discource_id: parseInt(id) }
+        variables: { id: parseInt(id) }
     });
 
     const [data, setData] = React.useState(null);
@@ -24,7 +22,25 @@ function Fragment () {
     React.useEffect(() => {
         if (loading)
             return;
-        setData(response.annotation[0] || null);
+        
+        const annotation = response.annotation[0]
+
+        const codes = [annotation?.refers_to[0]]
+        annotation?.overlaps.map(overlap => {
+            return overlap?.refers_to?.map(item => (
+                codes.push(item)
+            ))
+        })
+        const sortedcodes = codes.reduce((unique, o) => {
+            if(!unique.some(obj => obj.name === o.name)) {
+              unique.push(o);
+            }
+            let sortedunique = unique.slice().sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+            return sortedunique;
+        },[]);
+
+        setData({...annotation, sortedcodes} || null);
+    
     }, [response, loading]);
 
     if (loading) {
@@ -47,74 +63,29 @@ function Fragment () {
                 }
                 </ReactMarkdown>
             </p>
-            <table
-                style={{
-                    width: "100%"
-                }}
-                className="app-table"
-            >
-                <thead>
-                <tr>
-                    <td style={{ width: 40 }} />
-                    <td style={{ width: 40 }}>
-                        <FontAwesomeIcon icon={faShare} />
-                    </td>
-                    <td>
-                        <Link to={
-                            "/post/" + data?.annotates[0]?.in_topic[0].id + "#"
-                            + data?.annotates[0]?.id + "-"
-                            + data?.quote
-                        }>
-                        {data?.annotates[0]?.in_topic.map(item => (
-                            <span key={item.id}>{item.title}</span>
-                        ))}
-                        </Link>
-                    </td>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>
-                        <FontAwesomeIcon icon={faPenFancy}/>
-                    </td>
-                    <td>
-                        <FontAwesomeIcon icon={faProjectDiagram}/>
-                    </td>
-                </tr>
-                {
-                    data?.refers_to?.map(item => (
-                        <tr key={item.id}>
-                            <td>
-                                <span className="circle-count">{item.annotations_count}</span>
-                            </td>
-                            <td>
-                                <span className="circle-count">
-                                    {item.cooccurring_codes.length}
-                                </span>
-                            </td>
-                            <td><Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link></td>
-                        </tr>
-                    ))
-                }
-                {
-                    data?.overlaps?.map(overlap => {
-                        return overlap?.refers_to?.map(item => (
-                            <tr key={item.id}>
-                                <td>
-                                    <span className="circle-count">{item.annotations_count}</span>
-                                </td>
-                                <td>
-                                    <span className="circle-count">
-                                        {item.cooccurring_codes.length}
-                                    </span>
-                                </td>
-                                <td><Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link></td>
-                            </tr>
-                        ))
-                    })
-                }
-                </tbody>
-            </table>
+
+            <p style={{ fontStyle: "italic" }}>
+                    From <Link to={
+                        "/post/" + data?.annotates[0]?.in_topic[0].id + "#"
+                        + data?.annotates[0]?.id + "-"
+                        + data?.quote
+                    }>
+                    {data?.annotates[0]?.in_topic.map(item => (
+                        <span key={item.id}>{item.title}</span>
+                    ))}
+                    </Link>
+            </p>
+
+            <p style={{ fontStyle: "italic" }}>Codes:</p>
+
+            {
+                data?.sortedcodes?.map(item => (
+                    <p key={item.id} style={{ fontStyle: "italic" }}>
+                        <Link to={`/codes/${item.id}`}>{item.name.toLowerCase()}</Link>, {item.annotations_count} annotations with {item.cooccurring_codes.length} connections
+                    </p>
+                ))
+            }
+
         </>
     )
 }

@@ -13,14 +13,26 @@ function Code () {
     const params = useParams();
 
     const { data:response, loading, } = useQuery(FULLCODE, {
-        variables: { discource_id:  parseInt(params.id)}
+        variables: { id:  parseInt(params.id)}
     });
     const [data, setData] = React.useState(null);
 
     React.useEffect(() => {
         if (loading)
             return;
-        setData(response?.code[0] || null);
+        
+        console.log(response)
+        const data = response?.code[0];
+        const top_cooccurring = []
+        let v = 0
+        for (var cc of data?.cooccurring_codes) {
+            if(cc.cooccurrences > 3) {
+                v += 1
+                top_cooccurring.push(cc)
+            }
+          }
+        console.log(v)
+        setData( {...data, 'top_cooccurring': top_cooccurring} || null);
     }, [response, loading]);
 
     if (loading) {
@@ -43,13 +55,43 @@ function Code () {
             <p style={{ fontStyle: "italic" }}>
                 { data?.description }
             </p>
+
+            {data?.top_cooccurring?.length > 0 && 
+                <p style={{ fontStyle: "italic" }}>
+                    '{ data?.name.toLowerCase() }' has often been applied together with 
+                    <span> </span>
+                    {data?.top_cooccurring?.map((code, i) => {
+                        return (
+                            <React.Fragment key={code.id}>
+                                { 
+                                    <span>
+                                        <Link to={`/codes/${code.id}`} key={code.id}>
+                                            {code.name.toLowerCase()}
+                                        </Link>
+                                        {data?.top_cooccurring.length - 2 > i && 
+                                            <span>, </span>
+                                        }
+                                        {data?.top_cooccurring.length - 2 === i && 
+                                            <span> and </span>
+                                        }
+                                        {data?.top_cooccurring.length - 1 === i && 
+                                            <span> </span>
+                                        }
+                                    </span>
+                                }
+                            </React.Fragment>
+                        )
+                    })}
+                </p>
+            }
+
             <p style={{ fontStyle: "italic" }}>
-                { data?.annotations_count } fragment{data?.annotations_count > 1 ? "s" : ""} refer to this code
+                { data?.annotations_count } fragment{data?.annotations_count > 1 ? "s" : ""} refer to this code:
             </p>
-            {
+            {   
                 data?.annotations?.map(annotation => (
                     <Link style={{ textDecoration: "none" }}to={`/fragment/${annotation.id}`} key={annotation.id}>
-                        <span key={annotation.discource_id}>
+                        <span key={annotation.id}>
                             <ReactMarkdown>
                                 { "➢  " + annotation.quote }
                             </ReactMarkdown>

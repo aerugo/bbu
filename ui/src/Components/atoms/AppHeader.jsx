@@ -16,12 +16,10 @@ function AppHeader ({ name, onMenuClick }) {
             <span>
                 {name}
             </span>
-            <span
+            <span className="hamburger-menu"
                 onClick={() => setMenuView(true)}
             >
-                <FontAwesomeIcon 
-                    icon={faBars} 
-                />
+                ≡
             </span>
         </div>
     );

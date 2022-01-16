@@ -13,6 +13,13 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 	const [isFirstTime, setIsFirstTime] = React.useState(true);
 	const [postContent, setPostContent] = React.useState("");
 	const [postClass, setPostClass] = React.useState("");
+	var sortedAnnotations = post?.annotations?.reduce((unique, o) => {
+		if(!unique.some(obj => obj.refers_to[0].name === o.refers_to[0].name)) {
+		  unique.push(o);
+		}
+		let sortedunique = unique.slice().sort((a, b) => a.refers_to[0].name.toLowerCase().localeCompare(b.refers_to[0].name.toLowerCase()))
+		return sortedunique;
+	},[]);
 
 	React.useEffect(() => {
 
@@ -68,22 +75,16 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 				<CollapseAbleTable
 					defaultIsCollapsed={true}
 					header={
-						<tr>
-							<td style={{ width: 40 }} />
-							<td style={{ width: 40 }} />
-							<td />
-						</tr>
+						<tr></tr>
 					}
-					data={post?.annotations}
+					data={sortedAnnotations}
 					rowRenderer={(row) =>
-						row.refers_to.map((item) => (
+						row.refers_to.map((item, i) => (
 							<React.Fragment key={item.id}>
-								<td>
-									<span className="circle-count">
-										{item.annotations_count}
-									</span>
-								</td>
-								<td className="unselectable">
+								<span className="unselectable">
+									<Link to={`/codes/${item.id}`}>
+										{item.name.toLowerCase()} 
+									</Link>
 									<span
 										onClick={() => {
 											if (searched.indexOf(item.id) > -1)
@@ -96,16 +97,11 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 									>
 										{
 											(searched.indexOf(item.id) > -1) ?
-											<FontAwesomeIcon icon={faEyeSlash} /> :
-											<FontAwesomeIcon icon={faEye} />
+											<span> [hide]</span> :
+											<span> [see]</span>
 										}
 									</span>
-								</td>
-								<td className="unselectable">
-									<Link to={`/codes/${item.id}`}>
-										{item.name.toLowerCase()}
-									</Link>
-								</td>
+								</span>
 							</React.Fragment>
 						))
 					}

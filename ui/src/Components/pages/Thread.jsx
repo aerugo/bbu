@@ -65,7 +65,7 @@ function Thread () {
                     position: "sticky",
                     top: 0,
                     background: "white",
-                    height: 40,
+                    height: 70,
                 }}
             >
                 <AppHeader

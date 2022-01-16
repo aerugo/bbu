@@ -1,6 +1,4 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import "../../styles/menu.css";
 import { blocked_fragments } from "../../annotation_ids"
@@ -22,7 +20,7 @@ function Menu ({ hide }) {
                 className="menu-control"
                 onClick={hide}
             >
-                <FontAwesomeIcon icon={faTimes} />
+                X
             </div>
             <div>
                 <p className="menu-heading">Babel Between Us</p>
