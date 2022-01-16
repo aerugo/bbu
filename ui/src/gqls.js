@@ -21,6 +21,7 @@ query FullCode($id: Int!){
       annotations_count
       cooccurring_codes {
         id
+        ccid
         name
         cooccurrences
       }
@@ -51,6 +52,7 @@ query Annotation($id: Int!){
         annotations_count
     		cooccurring_codes {
           id
+          ccid
           name
         }
       }
@@ -62,6 +64,7 @@ query Annotation($id: Int!){
             annotations_count
             cooccurring_codes {
               id
+              ccid
               name
             }
           }
@@ -94,6 +97,7 @@ query Post($id: Int!){
           annotations_count
           cooccurring_codes {
             id
+            ccid
             name
           }
         }

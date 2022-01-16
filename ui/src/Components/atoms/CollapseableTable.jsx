@@ -32,7 +32,7 @@ function CollapseAbleTable ({
                     <tbody>
                     {
                         isCollapsed ? null :
-                        data.map((row, index) => <span key={index}>{rowRenderer(row)}</span>)
+                        data.map((row, index) => <span key={index} style={{display: "inline-block"}}>{rowRenderer(row)}</span>)
                     }
                     </tbody>
                 </table>

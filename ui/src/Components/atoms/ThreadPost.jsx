@@ -81,7 +81,9 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 					rowRenderer={(row) =>
 						row.refers_to.map((item, i) => (
 							<React.Fragment key={item.id}>
-								<span className="unselectable">
+								<span 
+									className="unselectable"
+								>
 									<Link to={`/codes/${item.id}`}>
 										{item.name.toLowerCase()} 
 									</Link>
@@ -101,6 +103,7 @@ function ThreadPost({ post, converter, initialAnnotation }) {
 											<span> [see]</span>
 										}
 									</span>
+									<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
 								</span>
 							</React.Fragment>
 						))

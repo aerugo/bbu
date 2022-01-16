@@ -39,11 +39,11 @@ with open("./config.json") as json_config:
 
 uri = config['neo4j_uri']
 driver = GraphDatabase.driver(uri, auth=(config['neo4j_user'], config['neo4j_password']))
-data_path = os.path.abspath('./db/')
+data_path = os.path.abspath('./../db/')
 
 # Save data in chunks of size n
 def dumpSplit(data_topic, data_set, data, stats):
-    path = './db/'
+    path = './../db/'
     n = 1000
     data_chunks = [data[i * n:(i + 1) * n] for i in range((len(data) + n - 1) // n )]
     for num, item in enumerate(data_chunks):
@@ -422,7 +422,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     annotator_languages_query = f'''
     SELECT
     id, name, locale
-    FROM {db_root}annotator_store_languages
+    FROM {db_root}discourse_annotator_languages
     '''
 
     annotator_languages = {}
@@ -445,13 +445,13 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
     annotator_codes_query = f'''
     SELECT
     id, description, creator_id, created_at, updated_at, ancestry, annotations_count
-    FROM {db_root}annotator_store_tags
+    FROM {db_root}discourse_annotator_codes
     '''
 
     annotator_code_names_query = f'''
     SELECT
-    id, name, tag_id, language_id, created_at
-    FROM {db_root}annotator_store_tag_names
+    id, name, code_id, language_id, created_at
+    FROM {db_root}discourse_annotator_code_names
     '''
 
     annotator_codes = {}
@@ -478,7 +478,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
             'id': nid,
             'name': name[1],
             'name_normalized': name[1].lower().strip('"').strip("'"),
-            'tag_id': name[2],
+            'code_id': name[2],
             'language_id': name[3],
             'created_at':name[4]
         }
@@ -489,23 +489,23 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
 
     annotations_query = f'''
     SELECT
-    annotator_store_annotations.id, 
-	annotator_store_annotations.text, 
-	annotator_store_annotations.quote, 
-	annotator_store_annotations.created_at, 
-	annotator_store_annotations.updated_at, 
-	annotator_store_annotations.tag_id, 
-	annotator_store_annotations.post_id, 
-	annotator_store_annotations.creator_id, 
-	annotator_store_annotations.type, 
-	annotator_store_annotations.topic_id, 
-	annotator_store_ranges.start,
-	annotator_store_ranges.end,
-	annotator_store_ranges.start_offset,
-	annotator_store_ranges.end_offset
-    FROM {db_root}annotator_store_annotations
-	INNER JOIN {db_root}annotator_store_ranges
-	ON {db_root}annotator_store_annotations.id = {db_root}annotator_store_ranges.annotation_id
+    discourse_annotator_annotations.id, 
+	discourse_annotator_annotations.text, 
+	discourse_annotator_annotations.quote, 
+	discourse_annotator_annotations.created_at, 
+	discourse_annotator_annotations.updated_at, 
+	discourse_annotator_annotations.code_id, 
+	discourse_annotator_annotations.post_id, 
+	discourse_annotator_annotations.creator_id, 
+	discourse_annotator_annotations.type, 
+	discourse_annotator_annotations.topic_id, 
+	discourse_annotator_ranges.start,
+	discourse_annotator_ranges.end,
+	discourse_annotator_ranges.start_offset,
+	discourse_annotator_ranges.end_offset
+    FROM {db_root}discourse_annotator_annotations
+	INNER JOIN {db_root}discourse_annotator_ranges
+	ON {db_root}discourse_annotator_annotations.id = {db_root}discourse_annotator_ranges.annotation_id
     '''
 
     annotations = {}
@@ -526,7 +526,7 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
                 'quote': annotation[2].split('\n    \n')[0].rstrip() if annotation[2] else annotation[2],
                 'created_at': annotation[3],
                 'updated_at': annotation[4], 
-                'tag_id': annotation[5],
+                'code_id': annotation[5],
                 'post_id': annotation[6], 
                 'creator_id': annotation[7], 
                 'type': annotation[8],
@@ -665,15 +665,15 @@ def get_data(db_cursor, db_name, db_root, salt, ensure_consent, protected_topic_
         if omit_codes_prefix:
             for prefix in omit_codes_prefix:
                 if d['name'].startswith(prefix):
-                    omitted.add(d['tag_id'])
-                    if d['tag_id'] in annotator_codes.keys():
-                        del[annotator_codes[d['tag_id']]]
+                    omitted.add(d['code_id'])
+                    if d['code_id'] in annotator_codes.keys():
+                        del[annotator_codes[d['code_id']]]
                     del[new[a]]
                     continue
 
     new = dict(annotations)
     for a, d in annotations.items():
-        if d['tag_id'] in omitted:
+        if d['code_id'] in omitted:
             del(new[a])
             continue
         if omit_private_messages and d['post_id'] in pm_post_set:
@@ -735,7 +735,7 @@ def reload_data(dbs):
     # TODO: Set chunk size through parameter when loading script with reload flag.
 
     mylogs.info('Loading new data from databases...')
-    db_path = './db'
+    db_path = './../db'
     try:
         os.mkdir(db_path)
     except OSError:
@@ -774,7 +774,7 @@ def reload_data(dbs):
         stats['chunk_sizes'] = {}
 
         # Site data is always a single object
-        with open(f'./db/{db["name"]}_site.json', 'w') as file:
+        with open(f'./../db/{db["name"]}_site.json', 'w') as file:
             json.dump(d['site'], file, default=str)
 
         stats = dumpSplit('users', db['name'], list(d['users'].values()), stats)
@@ -790,7 +790,7 @@ def reload_data(dbs):
         stats = dumpSplit('annotations', db['name'],list(d['annotations'].values()),  stats)
 
         # Add chunk sizes to stats last
-        with open(f'./db/{db["name"]}_stats.json', 'w') as file:
+        with open(f'./../db/{db["name"]}_stats.json', 'w') as file:
             json.dump(stats, file, default=str)
 
 def load_data(dbs):
@@ -803,16 +803,16 @@ def load_data(dbs):
     data = {}
     for db in dbs:
         data[db['name']] = {}
-        with open(f'./db/{db["name"]}_site.json') as file:
+        with open(f'./../db/{db["name"]}_site.json') as file:
             data[db['name']]['site'] = json.load(file)
-        with open(f'./db/{db["name"]}_stats.json') as file:
+        with open(f'./../db/{db["name"]}_stats.json') as file:
             data[db['name']]['stats'] = json.load(file)
             stats = data[db['name']]['stats']
 
         for topic, chunks in stats['chunk_sizes'].items():
             data[db['name']][topic] = []
             for chunk in range(1, chunks + 1):
-                with open(f'./db/{db["name"]}_{topic}_{chunk}.json') as file:
+                with open(f'./../db/{db["name"]}_{topic}_{chunk}.json') as file:
                     data[db['name']][topic].extend(json.load(file))
 
     for k,d in data.items():
@@ -1280,12 +1280,12 @@ def graph_create_code_names(driver, data):
             f'CREATE (codename:codename {{id: value.id, platform: "{dataset}"}}) '
             f'SET codename.name = value.name '
             f'SET codename.name_normalized = value.name_normalized '
-            f'SET codename.code_id = value.tag_id '
+            f'SET codename.code_id = value.code_id '
             f'SET codename.language_id = value.language_id '
             f'SET codename.created_at = value.created_at '
             f'WITH codename, value '
             f'MATCH (language:language {{id: value.language_id, platform: "{dataset}"}}) '
-            f'MATCH (code:code {{id: value.tag_id, platform: "{dataset}"}}) '
+            f'MATCH (code:code {{id: value.code_id, platform: "{dataset}"}}) '
             f'WITH codename, language, code '
             f'CREATE (codename)<-[:HAS_CODENAME]-(code) '
             f'CREATE (codename)-[:IN_LANGUAGE]->(language) '
@@ -1324,7 +1324,7 @@ def graph_create_annotations(driver, data):
             f'SET annotation.quote = value.quote '
             f'SET annotation.created_at = value.created_at '
             f'SET annotation.updated_at = value.updated_at '
-            f'SET annotation.code_id = value.tag_id '
+            f'SET annotation.code_id = value.code_id '
             f'SET annotation.post_id = value.post_id '
             f'SET annotation.creator_id = value.creator_id '
             f'SET annotation.type = value.type '
@@ -1335,7 +1335,7 @@ def graph_create_annotations(driver, data):
             f'SET annotation.end_offset = value.end_offset '
             f'SET annotation.overlaps = value.overlaps '
             f'WITH annotation, value '
-            f'MATCH (code:code {{id: value.tag_id, platform: "{dataset}"}}) '
+            f'MATCH (code:code {{id: value.code_id, platform: "{dataset}"}}) '
             f'MATCH (post:post {{id: value.post_id, platform: "{dataset}"}}) '
             f'MATCH (user:user {{id: value.creator_id, platform: "{dataset}"}}) '
             f'WITH code, post, user, annotation '

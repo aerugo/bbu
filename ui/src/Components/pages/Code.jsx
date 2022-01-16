@@ -21,17 +21,13 @@ function Code () {
         if (loading)
             return;
         
-        console.log(response)
         const data = response?.code[0];
         const top_cooccurring = []
-        let v = 0
         for (var cc of data?.cooccurring_codes) {
-            if(cc.cooccurrences > 3) {
-                v += 1
+            if(cc.cooccurrences > 2) {
                 top_cooccurring.push(cc)
             }
           }
-        console.log(v)
         setData( {...data, 'top_cooccurring': top_cooccurring} || null);
     }, [response, loading]);
 
@@ -65,7 +61,7 @@ function Code () {
                             <React.Fragment key={code.id}>
                                 { 
                                     <span>
-                                        <Link to={`/codes/${code.id}`} key={code.id}>
+                                        <Link to={`/codes/${code.ccid}`} key={code.ccid}>
                                             {code.name.toLowerCase()}
                                         </Link>
                                         {data?.top_cooccurring.length - 2 > i && 
