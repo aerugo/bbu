@@ -81,7 +81,8 @@ export const typeDefs = gql`
           MATCH (this)<-[:REFERS_TO]-(origin_annotations:annotation)-[:ANNOTATES]->(p:post)<-[:ANNOTATES]-(cooccurring_annotation:annotation)-[:REFERS_TO]->(cooccurring_code)
           WITH DISTINCT this, cooccurring_code, r, cooccurring_annotation, cooccurring_neighbors
           WITH {
-              id: cooccurring_code.id,
+              id: toInteger(toString(cooccurring_code.id) + toString(this.id)),
+              ccid: cooccurring_code.id,
               name: cooccurring_code.name,
               name_normalized: cooccurring_code.name_normalized,
               description: cooccurring_code.description, 
@@ -97,6 +98,7 @@ export const typeDefs = gql`
 
   type cooccurring_code {
     id: Int
+    ccid: Int
     name: String
     name_normalized: String
     annotations_count: Int

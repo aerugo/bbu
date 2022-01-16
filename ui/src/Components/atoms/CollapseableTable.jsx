@@ -1,5 +1,3 @@
-import { faPenFancy, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 function CollapseAbleTable ({
@@ -23,12 +21,7 @@ function CollapseAbleTable ({
                 }}
             >
                 <span>
-                    <FontAwesomeIcon icon={faPenFancy}
-                        style={{
-                            marginRight: "1em"
-                        }}
-                    />
-                    <FontAwesomeIcon icon={isCollapsed ? faChevronRight : faChevronDown} />
+                    {isCollapsed ? <span>〉</span> : <span>﹀</span>}
                 </span>
             </div>
             <div>
@@ -39,7 +32,7 @@ function CollapseAbleTable ({
                     <tbody>
                     {
                         isCollapsed ? null :
-                        data.map((row, index) => <tr key={index}>{rowRenderer(row)}</tr>)
+                        data.map((row, index) => <span key={index} style={{display: "inline-block"}}>{rowRenderer(row)}</span>)
                     }
                     </tbody>
                 </table>

@@ -16,6 +16,13 @@ input {
   font-weight: 600;
   width: 100%;
   font-size: 22px;
+  height: 70px;
+}
+
+.hamburger-menu {
+  font-size: 40px;
+  line-height: 0.8;
+  font-weight: 400;
 }
 
 @media screen and (min-width: 769px) {

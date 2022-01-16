@@ -13,12 +13,18 @@ query {
 `;
 
 export const FULLCODE = gql`
-query FullCode($discource_id: Int!){
-    code: code(id: $discource_id) {
+query FullCode($id: Int!){
+    code: code(id: $id) {
       id
       name
       description
       annotations_count
+      cooccurring_codes {
+        id
+        ccid
+        name
+        cooccurrences
+      }
       annotations {
         id
         quote
@@ -29,8 +35,8 @@ query FullCode($discource_id: Int!){
 `;
 
 export const ANNOTATION = gql`
-query Annotation($discource_id: Int!){
-    annotation: annotation(id: $discource_id) {
+query Annotation($id: Int!){
+    annotation: annotation(id: $id) {
       id
       quote
       annotates {
@@ -46,6 +52,7 @@ query Annotation($discource_id: Int!){
         annotations_count
     		cooccurring_codes {
           id
+          ccid
           name
         }
       }
@@ -57,6 +64,7 @@ query Annotation($discource_id: Int!){
             annotations_count
             cooccurring_codes {
               id
+              ccid
               name
             }
           }
@@ -89,6 +97,7 @@ query Post($id: Int!){
           annotations_count
           cooccurring_codes {
             id
+            ccid
             name
           }
         }
