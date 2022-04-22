@@ -18,7 +18,7 @@ function About () {
                 name="Babel Between Us"
             />
             <p>
-            Babel Between Us is a collaborative literary project exploring the uncharted waters between collaboration, fiction and ethnography.<br/><br/>
+            Babel blablabla Us is a collaborative literary project exploring the uncharted waters between collaboration, fiction and ethnography.<br/><br/>
 
             A group of 18 writers collectively improvised stories on the bbu.world <a href="https://bbu.world/c/babel-between-us/9">forum</a> from March to December 2020. The resulting fiction was read and annotated by a group of readers using experimental ethnographic methods. Their work was visualised as a <a href="http://server-2021.edgeryders.eu/dashboard/bbu/ethno-bbu?m=cn%7Ccl&cn.weightFilter=3&cn.labelDensity=0.67&cn.labelThreshold=7">"Semantic Social Network"</a>, which was then presented back to the writers.<br/><br/>
 
