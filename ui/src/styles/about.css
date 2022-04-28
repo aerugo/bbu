@@ -1,0 +1,27 @@
+  blockquote {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 10pt;
+  }
+  
+  .quote {
+    font-style: italic;
+  }
+  
+  footer {
+    padding-bottom: 15px;
+  }
+  
+  .page-footer {
+    padding-top: 50px;
+    padding-bottom: 100px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .page-footer img {
+    max-height: 70px;
+    max-width: auto;
+    margin: 20px;
+  }
+  
