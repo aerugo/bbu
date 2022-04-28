@@ -5,6 +5,7 @@ import Fragment from "./Components/pages/Fragment";
 import About from "./Components/pages/About";
 import Code from "./Components/pages/Code";
 import CodeBook from "./Components/pages/CodeBook";
+import Corpus from "./Components/pages/Corpus";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<CodeBook />}/>
+          <Route path="/corpus" element={<Corpus />} />
           <Route path="/codes" element={<CodeBook />} />
           <Route path="/codes/:id" element={<Code />} />
           <Route path="/about" element={<About />} />
