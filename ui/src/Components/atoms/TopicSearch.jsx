@@ -1,12 +1,12 @@
 import React from "react";
 
-function CodeSearch ({searchString, setSearchString}) {
+function TopicSearch ({searchString, setSearchString}) {
 
     return (
         <div>
         <input 
-            className="code-search-input"
-            placeholder="Search for codes..."
+            className="topic-search-input"
+            placeholder="Find stories..."
             value={searchString}
             onChange={(e) => {
                 setSearchString(e.target.value)
@@ -17,4 +17,4 @@ function CodeSearch ({searchString, setSearchString}) {
 
 }
 
-export default CodeSearch;
+export default TopicSearch;
