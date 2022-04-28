@@ -261,7 +261,7 @@ function About () {
             <br/><br/>
             Babel Between Us is made by Ola Claësson, Jennifer McGeachie, Filip Nyström, Alja Gudžević, Lea Vene, Bojan
             Mucko, Hugi
-            Ásgeirsson and Jakob Skote, with Amelia Hassoun as the senior ethnographer. Babel Between Us is a
+            Ásgeirsson and Jakob Skote, with Amelia Hassoun as the senior ethnographer. The writers are <a href="https://bbu.world/u/Zelda">Zelda</a>, <a href="https://bbu.world/u/WereBear">WereBear</a>, <a href="https://bbu.world/u/TonyMarx">TonyMarx</a>, <a href="https://bbu.world/u/tomas">tomas</a>, <a href="https://bbu.world/u/SilverRose">SilverRose</a>, <a href="https://bbu.world/u/Shruti">Shruti</a>, <a href="https://bbu.world/u/Player1">Player1</a>, <a href="https://bbu.world/u/Maud">Maud</a>, <a href="https://bbu.world/u/joey">Kerak</a>, <a href="https://bbu.world/u/Illias">Illias</a>, <a href="https://bbu.world/u/Geoffwithag">Geoffwithag</a>, <a href="https://bbu.world/u/Gallow">Gallow</a>, <a href="https://bbu.world/u/Fel">Fel</a>, <a href="https://bbu.world/u/EdgarSwift">EdgarSwift</a>, <a href="https://bbu.world/u/disco4robot">disco4robot</a>, <a href="https://bbu.world/u/ctrlcreep">ctrlcreep</a>, <a href="https://bbu.world/u/Bainsdrookel">Bainsdrookel</a>, and <a href="https://bbu.world/u/Ananara">Ananara</a>. Babel Between Us is a
             collaboration
             with Blivande and Edgeryders, and made possible with funding from Kulturbryggan.
         </p>
