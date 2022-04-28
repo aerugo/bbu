@@ -9,9 +9,10 @@ function Menu ({ hide }) {
     const randomId = annotations[Math.floor(Math.random() * annotations.length)];
 
     const links = [
+        { label: "About", value: "about" },
         { label: "Codebook", value: "codes" },
         { label: "Random fragment", value: "fragment/" + randomId },
-        { label: "About", value: "about" }
+        { label: "Analysis", value: "analysis" }
     ];
 
     return (
