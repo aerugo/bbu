@@ -33,6 +33,7 @@ export const typeDefs = gql`
     user_id: Int!
     users: [user] @relation(name: "CREATED", direction: IN)
     posts: [post] @relation(name: "IN_TOPIC", direction: IN)
+    tags: [Int]
   }
 
   type post {

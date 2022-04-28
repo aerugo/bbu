@@ -130,3 +130,17 @@ query Topic($id: Int!) {
     }
   }
 `;
+
+export const TOPICS = gql`
+query {
+  topic(filter: {tags: 23}, orderBy: created_at_asc) {
+    id
+    title
+    created_at
+    tags
+    posts(filter: {post_number: 1 }) {
+      raw
+    }
+  }
+} 
+`
