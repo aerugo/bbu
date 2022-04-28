@@ -10,6 +10,7 @@ function Menu ({ hide }) {
 
     const links = [
         { label: "About", value: "about" },
+        { label: "Corpus", value: "corpus" },
         { label: "Codebook", value: "codes" },
         { label: "Random fragment", value: "fragment/" + randomId },
         { label: "Analysis", value: "analysis" }
