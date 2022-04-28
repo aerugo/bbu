@@ -24,6 +24,7 @@ input {
   font-size: 40px;
   line-height: 0.8;
   font-weight: 400;
+  cursor: pointer;
 }
 
 @media screen and (min-width: 769px) {
