@@ -9,6 +9,7 @@
     grid-template-rows: 50px calc(100% - 50px);
     background-color: white;
     box-sizing: border-box;
+    z-index: 1;
 }
 
 @media screen and (min-width: 769px) {

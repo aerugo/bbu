@@ -25,6 +25,8 @@ h4 {
 
 .topic-preview-container {
     margin: 0px 0px 20px 0px;
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 
 .topic-preview-desc {
@@ -32,6 +34,4 @@ h4 {
     height: 10rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
