@@ -12,8 +12,7 @@ function Menu ({ hide }) {
         { label: "About", value: "about" },
         { label: "Corpus", value: "corpus" },
         { label: "Codebook", value: "codes" },
-        { label: "Random fragment", value: "fragment/" + randomId },
-        { label: "Analysis", value: "analysis" }
+        { label: "Random fragment", value: "fragment/" + randomId }
     ];
 
     return (
