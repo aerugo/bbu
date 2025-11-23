@@ -9,9 +9,116 @@ export const typeDefs = gql`
   # Define custom Graphql types
   #
   scalar JSONObject
+  scalar Long
 
   #
-  # Define GraphQl / Neo4j model
+  # Filter input types
+  #
+  input _CodeFilter {
+    id: Int
+    id_in: [Int]
+    name: String
+    name_contains: String
+    name_normalized: String
+    annotations_count: Int
+    annotations_count_gt: Int
+    annotations_count_gte: Int
+    annotations_count_lt: Int
+    annotations_count_lte: Int
+  }
+
+  input _PostFilter {
+    id: Int
+    id_in: [Int]
+    topic_id: Int
+    post_number: Int
+    user_id: Int
+  }
+
+  input _TopicFilter {
+    id: Int
+    id_in: [Int]
+    tags: Int
+    user_id: Int
+  }
+
+  input _AnnotationFilter {
+    id: Int
+    id_in: [Int]
+    post_id: Int
+    topic_id: Int
+    code_id: Int
+  }
+
+  input _UserFilter {
+    id: Int
+    id_in: [Int]
+    username: String
+  }
+
+  input _TagFilter {
+    id: Int
+    id_in: [Int]
+    name: String
+  }
+
+  #
+  # Ordering enums
+  #
+  enum _CodeOrdering {
+    id_asc
+    id_desc
+    name_asc
+    name_desc
+    name_normalized_asc
+    name_normalized_desc
+    annotations_count_asc
+    annotations_count_desc
+    created_at_asc
+    created_at_desc
+  }
+
+  enum _PostOrdering {
+    id_asc
+    id_desc
+    created_at_asc
+    created_at_desc
+    post_number_asc
+    post_number_desc
+  }
+
+  enum _TopicOrdering {
+    id_asc
+    id_desc
+    created_at_asc
+    created_at_desc
+    title_asc
+    title_desc
+  }
+
+  enum _AnnotationOrdering {
+    id_asc
+    id_desc
+    created_at_asc
+    created_at_desc
+  }
+
+  enum _UserOrdering {
+    id_asc
+    id_desc
+    username_asc
+    username_desc
+  }
+
+  enum _TagOrdering {
+    id_asc
+    id_desc
+    name_asc
+    name_desc
+  }
+
+  #
+  # Define GraphQL model
   #
 
   type user {
@@ -19,8 +126,8 @@ export const typeDefs = gql`
     id: Int!
     email: String!
     username: String!
-    created: [topic] @relation(name: "CREATED", direction: OUT)
-    used_code: [code] @relation(name: "USED_CODE", direction: OUT)
+    created: [topic]
+    used_code: [code]
     USED_CODE_rel: [USED_CODE]
   }
 
@@ -31,8 +138,8 @@ export const typeDefs = gql`
     title: String!
     updated_at: String!
     user_id: Int!
-    users: [user] @relation(name: "CREATED", direction: IN)
-    posts: [post] @relation(name: "IN_TOPIC", direction: IN)
+    users: [user]
+    posts(filter: _PostFilter, orderBy: _PostOrdering, first: Int, offset: Int): [post]
     tags: [Int]
   }
 
@@ -48,11 +155,11 @@ export const typeDefs = gql`
     topic_id: Int!
     updated_at: String!
     user_id: Int!
-    in_topic: [topic] @relation(name: "IN_TOPIC", direction: OUT)
-    is_reply_to: [post] @relation(name: "IS_REPLY_TO", direction: OUT)
-    contains_quote_from: [post] @relation(name: "CONTAINS_QUOTE_FROM", direction: OUT)
-    users: [user] @relation(name: "LIKES", direction: IN)
-    annotations: [annotation] @relation(name: "ANNOTATES", direction: IN)
+    in_topic(filter: _TopicFilter, orderBy: _TopicOrdering, first: Int, offset: Int): [topic]
+    is_reply_to: [post]
+    contains_quote_from: [post]
+    users: [user]
+    annotations(filter: _AnnotationFilter, orderBy: _AnnotationOrdering, first: Int, offset: Int): [annotation]
   }
 
   type code {
@@ -66,35 +173,12 @@ export const typeDefs = gql`
     name: String
     name_normalized: String
     updated_at: String!
-    has_parent_code: [code] @relation(name: "HAS_PARENT_CODE", direction: OUT)
-    cooccurs: [code] @relation(name: "COOCCURS", direction: OUT)
+    has_parent_code: [code]
+    cooccurs: [code]
     COOCCURS_rel: [COOCCURS]
-    annotations: [annotation] @relation(name: "REFERS_TO", direction: IN)
-    users: [user] @relation(name: "USED_CODE", direction: IN)
+    annotations(filter: _AnnotationFilter, orderBy: _AnnotationOrdering, first: Int, offset: Int): [annotation]
+    users: [user]
     cooccurring_codes: [cooccurring_code]
-      @cypher(
-        statement: """
-          MATCH p1=(this)-[r:COOCCURS]-(cooccurring_code:code)
-          WHERE r.count > 1
-          MATCH p2=(cooccurring_code)-[r2:COOCCURS]-(c3:code)
-          WHERE r2.count > 1
-          WITH DISTINCT this, cooccurring_code, r, count(DISTINCT r2) as cooccurring_neighbors
-          MATCH (this)<-[:REFERS_TO]-(origin_annotations:annotation)-[:ANNOTATES]->(p:post)<-[:ANNOTATES]-(cooccurring_annotation:annotation)-[:REFERS_TO]->(cooccurring_code)
-          WITH DISTINCT this, cooccurring_code, r, cooccurring_annotation, cooccurring_neighbors
-          WITH {
-              id: toInteger(toString(cooccurring_code.id) + toString(this.id)),
-              ccid: cooccurring_code.id,
-              name: cooccurring_code.name,
-              name_normalized: cooccurring_code.name_normalized,
-              description: cooccurring_code.description, 
-              cooccurrences: r.count,
-              annotations_count: cooccurring_code.annotations_count,
-              annotations_ids: COLLECT(cooccurring_annotation.id),
-              cooccurrence_degree: cooccurring_neighbors
-              } AS cooccurring_codes
-          RETURN cooccurring_codes
-        """
-      )
   }
 
   type cooccurring_code {
@@ -108,13 +192,6 @@ export const typeDefs = gql`
     annotations_ids: [Int]
     cooccurrence_degree: Int
     annotations: [annotation]
-      @cypher(
-        statement: """
-          MATCH (a:annotation) 
-          WHERE a.id IN this.annotations_ids
-          RETURN a
-        """
-      )
   }
 
   type annotation {
@@ -129,24 +206,44 @@ export const typeDefs = gql`
     topic_id: Int!
     type: String!
     updated_at: String!
-    refers_to: [code] @relation(name: "REFERS_TO", direction: OUT)
-    annotates: [post] @relation(name: "ANNOTATES", direction: OUT)
-    overlaps: [annotation] @relation(name: "OVERLAPS", direction: OUT)
+    refers_to(filter: _CodeFilter, orderBy: _CodeOrdering, first: Int, offset: Int): [code]
+    annotates(filter: _PostFilter, orderBy: _PostOrdering, first: Int, offset: Int): [post]
+    overlaps(filter: _AnnotationFilter, orderBy: _AnnotationOrdering, first: Int, offset: Int): [annotation]
   }
 
-  type COOCCURS @relation(name: "COOCCURS") {
+  type tag {
+    _id: Long!
+    id: Int!
+    name: String!
+    topic_count: Int
+    created_at: String
+    updated_at: String
+  }
+
+  type COOCCURS {
     from: code!
     to: code!
     corpus: String!
     count: Int!
   }
 
-  type USED_CODE @relation(name: "USED_CODE") {
+  type USED_CODE {
     from: user!
     to: code!
     count: Int!
   }
 
+  #
+  # Query type
+  #
+  type Query {
+    code(id: Int, filter: _CodeFilter, orderBy: _CodeOrdering, first: Int, offset: Int): [code]
+    post(id: Int, filter: _PostFilter, orderBy: _PostOrdering, first: Int, offset: Int): [post]
+    topic(id: Int, filter: _TopicFilter, orderBy: _TopicOrdering, first: Int, offset: Int): [topic]
+    annotation(id: Int, filter: _AnnotationFilter, orderBy: _AnnotationOrdering, first: Int, offset: Int): [annotation]
+    user(id: Int, filter: _UserFilter, orderBy: _UserOrdering, first: Int, offset: Int): [user]
+    tag(id: Int, filter: _TagFilter, orderBy: _TagOrdering, first: Int, offset: Int): [tag]
+  }
 `;
 
 export const gqlConfig = {

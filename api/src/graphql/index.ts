@@ -1,37 +1,31 @@
 import { Express } from "express";
 import { ApolloServer } from "apollo-server-express";
 import responseCachePlugin from "apollo-server-plugin-response-cache";
-import { assertSchema, makeAugmentedSchema } from "neo4j-graphql-js";
-import * as neo4j from "neo4j-driver";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { config } from "../config";
-import { typeDefs, gqlConfig } from "./schema";
+import { typeDefs } from "./schema";
+import { resolvers } from "./resolvers";
+import { loadData } from "../data/loader";
 import { getLogger } from "../logger";
 
 // logger
 const log = getLogger("GraphQl");
 
-export type ResolverContext = { driver: neo4j.Driver };
-
 export async function register(app: Express): Promise<void> {
-  // create the neo4j driver
-  const driver = neo4j.driver(
-    config.neo4j.url,
-    neo4j.auth.basic(config.neo4j.login, config.neo4j.password),
-    config.neo4j.options,
-  );
+  // Load data from JSON file into memory
+  log.info("Loading data from JSON file...");
+  await loadData();
+  log.info("Data loaded successfully");
 
-  // create the Neo4j graphql schema
-  const schema = makeAugmentedSchema({
+  // Create executable schema with custom resolvers
+  const schema = makeExecutableSchema({
     typeDefs,
-    config: gqlConfig,
+    resolvers,
   });
 
   // create the graphql server with apollo
   const serverGraphql = new ApolloServer({
     schema,
-    context: {
-      driver,
-    },
     plugins: [responseCachePlugin()],
     cacheControl: {
       defaultMaxAge: config.graphql_cache_max_age,

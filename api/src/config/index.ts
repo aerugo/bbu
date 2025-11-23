@@ -11,13 +11,6 @@ interface ConfigLog {
   file_path: string;
 }
 
-interface ConfigNeo4j {
-  url: string;
-  login: string;
-  password: string;
-  options?: { [key: string]: string | boolean | number };
-}
-
 export interface GraphStyle {
   [label: string]: {
     color: string;
@@ -29,8 +22,8 @@ export interface Config {
   port: number;
   error_with_stack: boolean;
   logs: ConfigLog;
-  neo4j: ConfigNeo4j;
   graphql_cache_max_age: number;
+  data_file_path: string;
 }
 
 export const config: Config = {
@@ -44,10 +37,5 @@ export const config: Config = {
     file_retention: "7d",
     file_path: "./",
   },
-  neo4j: {
-    url: process.env.NEO4J_URL || "bolt://localhost:7687",
-    login: process.env.NEO4J_LOGIN || "neo4j",
-    password: process.env.NEO4J_PASSWORD || "admin",
-    options: { disableLosslessIntegers: true },
-  },
+  data_file_path: process.env.DATA_FILE_PATH || path.resolve(__dirname, "../../../data/bbu_export.json"),
 };
