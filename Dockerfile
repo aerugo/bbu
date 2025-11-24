@@ -29,7 +29,7 @@ WORKDIR /app
 COPY ui/package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy frontend source code
 COPY ui/public/ ./public/
