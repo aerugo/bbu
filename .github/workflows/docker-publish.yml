@@ -6,14 +6,18 @@ on:
       - main
     paths:
       - 'api/**'
+      - 'bbu-front/**'
       - 'data/**'
-      - 'docker-compose.yml'
+      - 'Dockerfile'
+      - 'nginx.conf'
+      - 'supervisord.conf'
       - '.github/workflows/docker-publish.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'api/**'
+      - 'bbu-front/**'
       - 'data/**'
   workflow_dispatch:
 
