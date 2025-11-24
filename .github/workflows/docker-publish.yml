@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'api/**'
-      - 'bbu-front/**'
+      - 'ui/**'
       - 'data/**'
       - 'Dockerfile'
       - 'nginx.conf'
@@ -17,7 +17,7 @@ on:
       - main
     paths:
       - 'api/**'
-      - 'bbu-front/**'
+      - 'ui/**'
       - 'data/**'
   workflow_dispatch:
 
