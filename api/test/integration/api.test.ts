@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import fetch from "node-fetch";
 
-const LIVE_API_URL = "https://api.babelbetween.us/graphql";
+const LIVE_API_URL = "https://bbu.digr.ai/graphql";
 const LOCAL_API_URL = "http://localhost:4000/graphql";
 
 interface GraphQLResponse<T> {
@@ -271,7 +271,9 @@ describe("Capture Live API Responses", function () {
   this.timeout(30000);
 
   it("should fetch codes from live API", async () => {
-    const result = await queryGraphQL(LIVE_API_URL, `
+    const result = await queryGraphQL(
+      LIVE_API_URL,
+      `
       query {
         code(filter: { annotations_count_gt: 1 }, orderBy: name_normalized_asc, first: 5) {
           id
@@ -280,13 +282,16 @@ describe("Capture Live API Responses", function () {
           annotations_count
         }
       }
-    `);
+    `
+    );
     console.log("Live API codes sample:", JSON.stringify(result.data, null, 2));
     expect(result.errors).to.be.undefined;
   });
 
   it("should fetch a single code with cooccurrences from live API", async () => {
-    const result = await queryGraphQL(LIVE_API_URL, `
+    const result = await queryGraphQL(
+      LIVE_API_URL,
+      `
       query {
         code(id: 1) {
           id
@@ -299,8 +304,12 @@ describe("Capture Live API Responses", function () {
           }
         }
       }
-    `);
-    console.log("Live API code with cooccurrences:", JSON.stringify(result.data, null, 2));
+    `
+    );
+    console.log(
+      "Live API code with cooccurrences:",
+      JSON.stringify(result.data, null, 2)
+    );
     expect(result.errors).to.be.undefined;
   });
 });
