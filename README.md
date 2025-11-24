@@ -30,6 +30,24 @@ One interesting perspective on the BBU data is to explore the fiction through fo
 
 Our entire dataset is available through our [GraphQl API](http://207.154.248.234:4000/graphql), which can be improved with new queries as requested. See the [schema](https://github.com/aerugo/bbu/blob/main/api/src/graphql/schema.ts) to understand which data is available.
 
+## Running with Docker
+
+The BBU project includes a Docker container that serves both the frontend and the GraphQL API.
+
+```bash
+# Build the Docker image
+docker build -t bbu .
+
+# Run the container
+docker run -p 3000:3000 bbu
+```
+
+Once running:
+- **Frontend**: http://localhost:3000
+- **GraphQL API**: http://localhost:3000/graphql
+
+The frontend is served by nginx on port 3000, which also proxies GraphQL requests to the backend API running internally on port 4000.
+
 # Codes as worlds
 
 We are currently experimenting with different ways to experience the Babel unvierse. Our first exploration will be to focus on codes and their cooccurring codes, as well as the annotations that refer to those codes. We want to design an experience where one can "travel" between codes, exploring the "cooccurrence space" of one code at a time. 

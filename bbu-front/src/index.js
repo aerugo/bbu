@@ -5,8 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ApolloProvider, ApolloClient, InMemoryCache } from "@apollo/client";
 
+// Use relative URL so nginx can proxy to the API backend
 const client = new ApolloClient({
-  uri: "https://api.babelbetween.us/graphql",
+  uri: "/graphql",
   cache: new InMemoryCache()
 });
 
