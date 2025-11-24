@@ -142,5 +142,22 @@ query {
       raw
     }
   }
-} 
+}
+`
+
+export const ALL_CODES_WITH_COOCCURRENCES = gql`
+query {
+  code(filter: { annotations_count_gt: 1 }, orderBy: name_normalized_asc) {
+    id
+    name
+    name_normalized
+    annotations_count
+    cooccurring_codes {
+      id
+      ccid
+      name
+      cooccurrences
+    }
+  }
+}
 `

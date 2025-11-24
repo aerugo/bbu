@@ -14,6 +14,7 @@
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
+    "d3": "^7.9.0",
     "graphql": "^16.0.1",
     "process": "^0.11.10",
     "react": "^17.0.2",
