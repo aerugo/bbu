@@ -26,14 +26,14 @@ FROM node:18-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy frontend package files
-COPY bbu-front/package*.json ./
+COPY ui/package*.json ./
 
 # Install dependencies
 RUN npm ci
 
 # Copy frontend source code
-COPY bbu-front/public/ ./public/
-COPY bbu-front/src/ ./src/
+COPY ui/public/ ./public/
+COPY ui/src/ ./src/
 
 # Build the React app
 RUN npm run build
