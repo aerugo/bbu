@@ -158,6 +158,11 @@ query {
       name
       cooccurrences
     }
+    annotations {
+      id
+      quote
+      post_id
+    }
   }
 }
 `

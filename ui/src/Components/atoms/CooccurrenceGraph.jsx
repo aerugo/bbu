@@ -5,10 +5,12 @@ import { Link } from "react-router-dom";
 function CooccurrenceGraph({ codes }) {
   const svgRef = useRef(null);
   const containerRef = useRef(null);
-  const [minCooccurrences, setMinCooccurrences] = useState(3);
+  const [minCooccurrences, setMinCooccurrences] = useState(4);
   const [maxCooccurrences, setMaxCooccurrences] = useState(100);
   const [hoveredNode, setHoveredNode] = useState(null);
   const simulationRef = useRef(null);
+  const [animations, setAnimations] = useState([]);
+  const animationIdRef = useRef(0);
 
   // Process data to create nodes and links
   const processData = useCallback((codes, minCooc) => {
@@ -38,7 +40,8 @@ function CooccurrenceGraph({ codes }) {
           id: code.id,
           name: code.name,
           annotations_count: code.annotations_count,
-          maxCooc: nodeConnections.get(code.id)
+          maxCooc: nodeConnections.get(code.id),
+          annotations: code.annotations || []
         });
       }
     });
@@ -69,6 +72,43 @@ function CooccurrenceGraph({ codes }) {
     };
   }, []);
 
+  // Handle node click to start typewriter animation
+  const handleNodeClick = useCallback((nodeData) => {
+    if (!nodeData.annotations || nodeData.annotations.length === 0) return;
+
+    // Get a random annotation
+    const randomAnnotation = nodeData.annotations[Math.floor(Math.random() * nodeData.annotations.length)];
+    const quote = randomAnnotation.quote;
+
+    if (!quote || quote.trim() === '') return;
+
+    // Get container dimensions for random positioning
+    const container = containerRef.current;
+    if (!container) return;
+
+    const width = container.clientWidth;
+    const height = Math.max(600, window.innerHeight * 0.7);
+
+    // Random position with margins to avoid edge cutoff
+    const margin = 100;
+    const x = margin + Math.random() * (width - 2 * margin);
+    const y = margin + Math.random() * (height - 2 * margin);
+
+    // Create new animation
+    const newAnimation = {
+      id: animationIdRef.current++,
+      text: quote,
+      x,
+      y,
+      charIndex: 0,
+      opacity: 1,
+      phase: 'typing', // 'typing', 'waiting', 'fading'
+      startTime: Date.now()
+    };
+
+    setAnimations(prev => [...prev, newAnimation]);
+  }, []);
+
   // Calculate max cooccurrences for slider
   useEffect(() => {
     if (codes && codes.length > 0) {
@@ -83,6 +123,45 @@ function CooccurrenceGraph({ codes }) {
       setMaxCooccurrences(max);
     }
   }, [codes]);
+
+  // Manage typewriter animations
+  useEffect(() => {
+    if (animations.length === 0) return;
+
+    const interval = setInterval(() => {
+      setAnimations(prev => {
+        return prev.map(anim => {
+          const now = Date.now();
+          const elapsed = now - anim.startTime;
+
+          if (anim.phase === 'typing') {
+            // Type one character every 50ms
+            if (elapsed > anim.charIndex * 50) {
+              if (anim.charIndex < anim.text.length) {
+                return { ...anim, charIndex: anim.charIndex + 1 };
+              } else {
+                // Switch to waiting phase
+                return { ...anim, phase: 'waiting', startTime: now };
+              }
+            }
+          } else if (anim.phase === 'waiting') {
+            // Wait for 3 seconds after fully typed
+            if (elapsed > 3000) {
+              return { ...anim, phase: 'fading', startTime: now };
+            }
+          } else if (anim.phase === 'fading') {
+            // Fade out over 1 second
+            const fadeProgress = Math.min(elapsed / 1000, 1);
+            return { ...anim, opacity: 1 - fadeProgress };
+          }
+
+          return anim;
+        }).filter(anim => !(anim.phase === 'fading' && anim.opacity <= 0));
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [animations]);
 
   useEffect(() => {
     if (!codes || codes.length === 0 || !svgRef.current || !containerRef.current) return;
@@ -114,6 +193,9 @@ function CooccurrenceGraph({ codes }) {
       });
 
     svg.call(zoom);
+
+    // Set initial zoom to be more zoomed out
+    svg.call(zoom.transform, d3.zoomIdentity.scale(0.6));
 
     // Calculate link strength based on cooccurrences
     const maxLinkValue = d3.max(links, d => d.value) || 1;
@@ -176,7 +258,7 @@ function CooccurrenceGraph({ codes }) {
         return baseSize + scale;
       })
       .attr("fill", "#000")
-      .attr("stroke", "#fff")
+      .attr("stroke", "#fafafa")
       .attr("stroke-width", 1.5);
 
     // Add labels to nodes
@@ -214,6 +296,11 @@ function CooccurrenceGraph({ codes }) {
       });
 
     node.call(drag);
+
+    // Click handler for typewriter effect
+    node.on("click", (event, d) => {
+      handleNodeClick(d);
+    });
 
     // Hover effects
     node.on("mouseenter", (event, d) => {
@@ -275,7 +362,57 @@ function CooccurrenceGraph({ codes }) {
     return () => {
       simulation.stop();
     };
-  }, [codes, minCooccurrences, processData]);
+  }, [codes, minCooccurrences, processData, handleNodeClick]);
+
+  // Render typewriter animations
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+
+    // Create or update animation group (outside the zoom group for fixed positioning)
+    let animGroup = svg.select('.animation-group');
+    if (animGroup.empty()) {
+      animGroup = svg.append('g').attr('class', 'animation-group');
+    }
+
+    // Bind data and update foreignObject elements for better text wrapping
+    const foreignObjects = animGroup.selectAll('.typewriter-foreign')
+      .data(animations, d => d.id);
+
+    // Enter new foreign objects
+    const enterSelection = foreignObjects.enter()
+      .append('foreignObject')
+      .attr('class', 'typewriter-foreign')
+      .attr('x', d => d.x - 200) // Center the 400px width
+      .attr('y', d => d.y - 50)
+      .attr('width', 400)
+      .attr('height', 200)
+      .style('pointer-events', 'none')
+      .style('overflow', 'visible');
+
+    enterSelection.append('xhtml:div')
+      .style('font-family', "'Courier New', monospace")
+      .style('font-size', '14px')
+      .style('color', '#000')
+      .style('text-align', 'center')
+      .style('line-height', '1.4')
+      .style('padding', '8px')
+      .style('background', 'rgba(255, 255, 255, 0.95)')
+      .style('border-radius', '4px')
+      .style('box-shadow', '0 2px 8px rgba(0,0,0,0.1)')
+      .style('max-width', '400px')
+      .style('word-wrap', 'break-word');
+
+    // Update all foreign objects
+    foreignObjects.merge(enterSelection)
+      .attr('opacity', d => d.opacity)
+      .select('div')
+      .text(d => d.text.substring(0, d.charIndex));
+
+    // Remove completed animations
+    foreignObjects.exit().remove();
+  }, [animations]);
 
   // Handle window resize
   useEffect(() => {
