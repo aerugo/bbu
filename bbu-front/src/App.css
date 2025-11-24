@@ -1,0 +1,30 @@
+.app-container {
+  padding: 15px;
+  font-family: 'Baskervville', serif;
+  box-sizing: border-box;
+  width: 100%;
+  line-height: 1.5;
+}
+
+input {
+  font-family: 'Baskervville', serif;
+}
+
+.app-header {
+  display: grid;
+  grid-template-columns: calc(100% - 20px) 20px;
+  font-weight: 600;
+  width: 100%;
+  font-size: 22px;
+}
+
+@media screen and (min-width: 769px) {
+  .app-container {
+    width: 60%;
+    margin-left: 20%;
+  }
+}
+
+a {
+  color: black;
+}
