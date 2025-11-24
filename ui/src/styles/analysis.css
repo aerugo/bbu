@@ -80,7 +80,7 @@
   background: #000;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid #fafafa;
   box-shadow: 0 0 0 1px #000;
   transition: transform 0.15s ease;
 }
@@ -95,7 +95,7 @@
   background: #000;
   border-radius: 50%;
   cursor: pointer;
-  border: 2px solid #fff;
+  border: 2px solid #fafafa;
   box-shadow: 0 0 0 1px #000;
 }
 
@@ -128,7 +128,7 @@
   position: absolute;
   top: 80px;
   right: 15px;
-  background: #fff;
+  background: #fafafa;
   border: 1px solid #000;
   padding: 0.75em 1em;
   font-family: 'Baskervville', 'Times New Roman', serif;

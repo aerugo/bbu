@@ -7,7 +7,7 @@
     padding: 20px;
     display: grid;
     grid-template-rows: 50px calc(100% - 50px);
-    background-color: white;
+    background-color: #fafafa;
     box-sizing: border-box;
     z-index: 1;
 }
